@@ -306,6 +306,54 @@ class Utils {
         return { labels, data };
     }
 
+    // Progress calculation helpers
+    static calculatePercentageChange(oldValue, newValue) {
+        if (oldValue === null || newValue === null || oldValue === undefined || newValue === undefined || oldValue === 0) {
+            return { absolute: 0, percentage: 0, hasChange: false };
+        }
+        
+        const absolute = newValue - oldValue;
+        const percentage = (absolute / oldValue) * 100;
+        
+        return {
+            absolute,
+            percentage,
+            hasChange: Math.abs(percentage) > 0.1
+        };
+    }
+
+    static getProgressDirection(metric, change) {
+        // Determine if a change is positive or negative based on the metric
+        const improvementMetrics = ['musclePercent', 'waterPercent']; // Higher is better
+        const reductionMetrics = ['weight', 'bodyFatPercent']; // Lower is better
+        
+        if (reductionMetrics.includes(metric)) {
+            return change < 0 ? 'positive' : 'negative';
+        } else if (improvementMetrics.includes(metric)) {
+            return change > 0 ? 'positive' : 'negative';
+        }
+        
+        return 'neutral';
+    }
+
+    static formatProgressChange(change, unit, showPercentage = true) {
+        if (!change.hasChange) {
+            return 'No change';
+        }
+        
+        const arrow = change.absolute > 0 ? '↑' : '↓';
+        const formattedAbsolute = this.formatNumber(Math.abs(change.absolute), 1);
+        const formattedPercentage = this.formatNumber(Math.abs(change.percentage), 1);
+        
+        let text = `${arrow} ${formattedAbsolute}${unit}`;
+        
+        if (showPercentage && Math.abs(change.percentage) >= 0.5) {
+            text += ` (${formattedPercentage}%)`;
+        }
+        
+        return text;
+    }
+
     static getChartColors() {
         return {
             primary: '#2563eb',

@@ -476,11 +476,120 @@ class ChartManager {
         }
     }
 
+    // Update progress summary cards
+    updateProgressSummary(period = 30) {
+        try {
+            const measurements = dataManager.getMeasurementsInPeriod(period);
+            
+            if (measurements.length < 2) {
+                // Not enough data for comparison
+                this.showNoProgressData(period);
+                return;
+            }
+
+            // Sort measurements by date (oldest first for comparison)
+            const sortedMeasurements = measurements.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const oldestMeasurement = sortedMeasurements[0];
+            const newestMeasurement = sortedMeasurements[sortedMeasurements.length - 1];
+
+            // Calculate percentage changes for each metric
+            const metrics = [
+                { key: 'weight', name: 'Weight', unit: 'kg', elementId: 'weightChange', cardId: 'weightProgress' },
+                { key: 'bodyFatPercent', name: 'Body Fat', unit: '%', elementId: 'bodyFatChange', cardId: 'bodyFatProgress' },
+                { key: 'musclePercent', name: 'Muscle', unit: '%', elementId: 'muscleChange', cardId: 'muscleProgress' },
+                { key: 'waterPercent', name: 'Water', unit: '%', elementId: 'waterChange', cardId: 'waterProgress' }
+            ];
+
+            metrics.forEach(metric => {
+                const oldValue = oldestMeasurement[metric.key];
+                const newValue = newestMeasurement[metric.key];
+                
+                this.updateProgressCard(metric, oldValue, newValue, period);
+            });
+
+        } catch (error) {
+            console.error('Error updating progress summary:', error);
+        }
+    }
+
+    updateProgressCard(metric, oldValue, newValue, period) {
+        const changeElement = document.getElementById(metric.elementId);
+        const cardElement = document.getElementById(metric.cardId);
+        
+        if (!changeElement || !cardElement) return;
+
+        if (oldValue === null || newValue === null || oldValue === undefined || newValue === undefined) {
+            changeElement.innerHTML = '--';
+            cardElement.className = 'progress-card neutral';
+            return;
+        }
+
+        // Calculate absolute and percentage change
+        const absoluteChange = newValue - oldValue;
+        const percentageChange = oldValue !== 0 ? (absoluteChange / oldValue) * 100 : 0;
+        
+        // Determine if this is positive, negative, or neutral change
+        let changeType = 'neutral';
+        let arrow = '';
+        
+        if (Math.abs(percentageChange) > 0.5) { // Only show changes > 0.5%
+            if (metric.key === 'weight' || metric.key === 'bodyFatPercent') {
+                // For weight and body fat, decrease is generally positive
+                changeType = absoluteChange < 0 ? 'positive' : 'negative';
+                arrow = absoluteChange < 0 ? '↓' : '↑';
+            } else {
+                // For muscle and water, increase is generally positive
+                changeType = absoluteChange > 0 ? 'positive' : 'negative';
+                arrow = absoluteChange > 0 ? '↑' : '↓';
+            }
+        }
+
+        // Format the display
+        const formattedAbsolute = Utils.formatNumber(Math.abs(absoluteChange), 1);
+        const formattedPercentage = Utils.formatNumber(Math.abs(percentageChange), 1);
+        
+        let displayText;
+        if (Math.abs(percentageChange) < 0.1) {
+            displayText = 'No change';
+        } else {
+            displayText = `${arrow} ${formattedAbsolute}${metric.unit}`;
+        }
+
+        // Update the card
+        changeElement.innerHTML = `
+            <span class="progress-change ${changeType}">
+                ${displayText}
+            </span>
+        `;
+
+        if (Math.abs(percentageChange) >= 0.5) {
+            changeElement.innerHTML += `<div style="font-size: var(--font-size-sm); font-weight: 500; color: var(--text-secondary);">${formattedPercentage}%</div>`;
+        }
+
+        cardElement.className = `progress-card ${changeType}`;
+    }
+
+    showNoProgressData(period) {
+        const metrics = ['weightChange', 'bodyFatChange', 'muscleChange', 'waterChange'];
+        const cards = ['weightProgress', 'bodyFatProgress', 'muscleProgress', 'waterProgress'];
+        
+        metrics.forEach((metricId, index) => {
+            const element = document.getElementById(metricId);
+            const card = document.getElementById(cards[index]);
+            
+            if (element && card) {
+                element.innerHTML = 'No data';
+                card.className = 'progress-card neutral';
+            }
+        });
+    }
+
     // Update all charts
     updateAllCharts(period = 30) {
         this.updateWeightChart(period);
         this.updateCompositionChart(period);
         this.updateBMIChart(period);
+        this.updateProgressSummary(period);
     }
 
     // Initialize all charts
@@ -572,6 +681,25 @@ class ChartManager {
     onPeriodChange(period) {
         const periodNum = parseInt(period);
         this.updateAllCharts(periodNum);
+        
+        // Update period labels in progress summary
+        this.updateProgressPeriodLabels(periodNum);
+    }
+
+    updateProgressPeriodLabels(period) {
+        const periodText = period === 30 ? 'Last 30 days' : 
+                          period === 90 ? 'Last 90 days' : 'Last year';
+        
+        const periodElements = [
+            'weightPeriod', 'bodyFatPeriod', 'musclePeriod', 'waterPeriod'
+        ];
+        
+        periodElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = periodText;
+            }
+        });
     }
 }
 
