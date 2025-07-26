@@ -6,8 +6,8 @@
   "background_color": "#f8fafc",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "scope": "/",
-  "start_url": "/",
+  "scope": "./",
+  "start_url": "./",
   "categories": ["health", "fitness", "lifestyle"],
   "lang": "en",
   "icons": [
@@ -71,7 +71,7 @@
       "name": "Add Measurement",
       "short_name": "Add Entry",
       "description": "Quick add a new body measurement",
-      "url": "/#entry",
+      "url": "./#entry",
       "icons": [
         {
           "src": "icons/add-icon-96x96.png",
@@ -84,7 +84,7 @@
       "name": "View Charts",
       "short_name": "Charts",
       "description": "View progress charts and trends",
-      "url": "/#charts",
+      "url": "./#charts",
       "icons": [
         {
           "src": "icons/chart-icon-96x96.png",

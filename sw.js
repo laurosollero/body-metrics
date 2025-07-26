@@ -7,15 +7,15 @@ const DATA_CACHE_NAME = 'bodymetrics-data-v1.0';
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
-    '/',
-    '/index.html',
-    '/styles/main.css',
-    '/styles/mobile.css',
-    '/js/app.js',
-    '/js/data.js',
-    '/js/charts.js',
-    '/js/utils.js',
-    '/manifest.json',
+    './',
+    './index.html',
+    './styles/main.css',
+    './styles/mobile.css',
+    './js/app.js',
+    './js/data.js',
+    './js/charts.js',
+    './js/utils.js',
+    './manifest.json',
     // External dependencies
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];
@@ -98,7 +98,7 @@ self.addEventListener('fetch', event => {
                             .catch(() => {
                                 // Return offline fallback for HTML pages
                                 if (request.destination === 'document') {
-                                    return caches.match('/index.html');
+                                    return caches.match('./index.html');
                                 }
                             });
                     })
@@ -135,15 +135,15 @@ self.addEventListener('push', event => {
     let notificationData = {
         title: 'BodyMetrics Reminder',
         body: 'Time for your weekly body measurement! 📊',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-96x96.png',
+        icon: './icons/icon-192x192.png',
+        badge: './icons/icon-96x96.png',
         tag: 'measurement-reminder',
         requireInteraction: false,
         actions: [
             {
                 action: 'open',
                 title: 'Open App',
-                icon: '/icons/add-icon-96x96.png'
+                icon: './icons/add-icon-96x96.png'
             },
             {
                 action: 'dismiss',

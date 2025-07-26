@@ -723,8 +723,8 @@ class Utils {
         if (Notification.permission === 'granted') {
             new Notification('BodyMetrics Test', {
                 body: 'Notifications are working! You\'ll receive weekly reminders to track your progress. 📊',
-                icon: '/icons/icon-192x192.png',
-                badge: '/icons/icon-96x96.png',
+                icon: './icons/icon-192x192.png',
+                badge: './icons/icon-96x96.png',
                 tag: 'test-notification'
             });
             return true;
