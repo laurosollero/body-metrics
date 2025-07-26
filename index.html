@@ -63,6 +63,26 @@
                     <h2>Dashboard</h2>
                     <p class="welcome-message" id="welcomeMessage">Welcome back!</p>
                 </div>
+
+                <!-- Goals Section - Prominent at Top -->
+                <div class="dashboard-goals" id="dashboardGoals">
+                    <div class="goals-header">
+                        <h3>Your Goals</h3>
+                        <button class="btn btn-secondary btn-small" id="quickSetGoal">
+                            🎯 Set Goal
+                        </button>
+                    </div>
+                    <div class="goal-indicators" id="goalIndicators">
+                        <div class="no-goals-dashboard">
+                            <div class="no-goals-icon">🎯</div>
+                            <div class="no-goals-text">
+                                <strong>No goals set yet</strong>
+                                <p>Set a health goal to track your progress!</p>
+                            </div>
+                            <button class="btn btn-primary" id="setFirstGoal">Set Your First Goal</button>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -320,6 +340,63 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
                 <button class="btn btn-danger" id="confirmAction">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Goal Modal -->
+    <div class="modal" id="quickGoalModal">
+        <div class="modal-content quick-goal-modal">
+            <div class="modal-header">
+                <h3>🎯 Quick Goal Setup</h3>
+                <button class="modal-close" id="quickGoalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="quick-goal-form" id="quickGoalForm">
+                    <div class="goal-type-selector">
+                        <h4>What's your goal?</h4>
+                        <div class="goal-type-grid">
+                            <button type="button" class="goal-type-btn" data-type="weight">
+                                <span class="goal-type-icon">⚖️</span>
+                                <span class="goal-type-label">Weight</span>
+                            </button>
+                            <button type="button" class="goal-type-btn" data-type="bodyFat">
+                                <span class="goal-type-icon">📉</span>
+                                <span class="goal-type-label">Body Fat</span>
+                            </button>
+                            <button type="button" class="goal-type-btn" data-type="muscle">
+                                <span class="goal-type-icon">💪</span>
+                                <span class="goal-type-label">Muscle</span>
+                            </button>
+                            <button type="button" class="goal-type-btn" data-type="water">
+                                <span class="goal-type-icon">💧</span>
+                                <span class="goal-type-label">Water</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-details" id="quickGoalDetails" style="display: none;">
+                        <div class="form-group">
+                            <label for="quickTargetValue">Target Value</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="quickTargetValue" name="targetValue" step="0.1" required>
+                                <span class="quick-unit" id="quickUnit"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="quickTargetDate">Target Date (optional)</label>
+                            <input type="date" id="quickTargetDate" name="targetDate">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Set Goal</button>
+                            <button type="button" class="btn btn-secondary" id="quickGoalCancel">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="quickGoalType" name="type">
+                </form>
             </div>
         </div>
     </div>

@@ -67,6 +67,11 @@ class BodyMetricsApp {
             goalForm.addEventListener('submit', this.handleFormSubmission);
         }
 
+        const quickGoalForm = document.getElementById('quickGoalForm');
+        if (quickGoalForm) {
+            quickGoalForm.addEventListener('submit', this.handleFormSubmission);
+        }
+
         // Save and add another button
         const saveAndAddBtn = document.getElementById('saveAndAddAnother');
         if (saveAndAddBtn) {
@@ -101,6 +106,9 @@ class BodyMetricsApp {
 
         // Goal form specific handlers
         this.setupGoalFormHandlers();
+
+        // Quick goal modal handlers
+        this.setupQuickGoalHandlers();
     }
 
     setupModalListeners() {
@@ -208,6 +216,132 @@ class BodyMetricsApp {
         if (targetDateInput) {
             const today = new Date().toISOString().split('T')[0];
             targetDateInput.min = today;
+        }
+    }
+
+    setupQuickGoalHandlers() {
+        // Quick goal buttons
+        const quickSetGoalBtn = document.getElementById('quickSetGoal');
+        const setFirstGoalBtn = document.getElementById('setFirstGoal');
+        const quickGoalClose = document.getElementById('quickGoalClose');
+        const quickGoalCancel = document.getElementById('quickGoalCancel');
+
+        if (quickSetGoalBtn) {
+            quickSetGoalBtn.addEventListener('click', () => this.showQuickGoalModal());
+        }
+
+        if (setFirstGoalBtn) {
+            setFirstGoalBtn.addEventListener('click', () => this.showQuickGoalModal());
+        }
+
+        if (quickGoalClose) {
+            quickGoalClose.addEventListener('click', () => this.hideQuickGoalModal());
+        }
+
+        if (quickGoalCancel) {
+            quickGoalCancel.addEventListener('click', () => this.hideQuickGoalModal());
+        }
+
+        // Goal type selection
+        const goalTypeButtons = document.querySelectorAll('.goal-type-btn');
+        goalTypeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.selectGoalType(btn.dataset.type);
+            });
+        });
+
+        // Set minimum date for quick goal
+        const quickTargetDate = document.getElementById('quickTargetDate');
+        if (quickTargetDate) {
+            const today = new Date().toISOString().split('T')[0];
+            quickTargetDate.min = today;
+        }
+    }
+
+    showQuickGoalModal() {
+        const modal = document.getElementById('quickGoalModal');
+        if (modal) {
+            modal.classList.add('active');
+            
+            // Reset form
+            this.resetQuickGoalForm();
+            
+            // Focus on first goal type button
+            const firstBtn = document.querySelector('.goal-type-btn');
+            if (firstBtn) {
+                setTimeout(() => firstBtn.focus(), 100);
+            }
+        }
+    }
+
+    hideQuickGoalModal() {
+        const modal = document.getElementById('quickGoalModal');
+        if (modal) {
+            modal.classList.remove('active');
+            this.resetQuickGoalForm();
+        }
+    }
+
+    resetQuickGoalForm() {
+        // Reset goal type selection
+        document.querySelectorAll('.goal-type-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+
+        // Hide details section
+        const details = document.getElementById('quickGoalDetails');
+        if (details) {
+            details.style.display = 'none';
+        }
+
+        // Clear form
+        const form = document.getElementById('quickGoalForm');
+        if (form) {
+            Utils.clearForm(form);
+        }
+    }
+
+    selectGoalType(type) {
+        // Update button selection
+        document.querySelectorAll('.goal-type-btn').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.type === type);
+        });
+
+        // Set hidden input
+        const hiddenInput = document.getElementById('quickGoalType');
+        if (hiddenInput) {
+            hiddenInput.value = type;
+        }
+
+        // Update unit display
+        const unitDisplay = document.getElementById('quickUnit');
+        const targetInput = document.getElementById('quickTargetValue');
+        
+        if (unitDisplay && targetInput) {
+            switch (type) {
+                case 'weight':
+                    unitDisplay.textContent = 'kg';
+                    targetInput.placeholder = 'e.g., 70.0';
+                    targetInput.min = '0.1';
+                    targetInput.max = '300';
+                    break;
+                case 'bodyFat':
+                case 'muscle':
+                case 'water':
+                    unitDisplay.textContent = '%';
+                    targetInput.placeholder = 'e.g., 15.0';
+                    targetInput.min = '0';
+                    targetInput.max = '100';
+                    break;
+            }
+        }
+
+        // Show details section
+        const details = document.getElementById('quickGoalDetails');
+        if (details) {
+            details.style.display = 'block';
+            targetInput.focus();
         }
     }
 
@@ -334,6 +468,8 @@ class BodyMetricsApp {
             this.saveProfile();
         } else if (form.id === 'goalForm') {
             this.saveGoal();
+        } else if (form.id === 'quickGoalForm') {
+            this.saveQuickGoal();
         }
     }
 
@@ -459,6 +595,46 @@ class BodyMetricsApp {
             
         } catch (error) {
             Utils.handleError(error, 'saving goal');
+        }
+    }
+
+    saveQuickGoal() {
+        try {
+            const form = document.getElementById('quickGoalForm');
+            const formData = Utils.getFormData(form);
+            
+            // Validate target value
+            const targetValueInput = form.querySelector('[name="targetValue"]');
+            if (!this.validateInput(targetValueInput)) {
+                Utils.showToast('Please fix the validation errors', 'error');
+                return;
+            }
+
+            // Convert form data to goal object
+            const goalData = {
+                type: formData.type,
+                targetValue: Utils.parseNumber(formData.targetValue),
+                targetDate: formData.targetDate || null,
+                notes: '' // Quick goals don't have notes
+            };
+
+            const result = dataManager.saveGoal(goalData);
+            
+            if (result.success) {
+                Utils.showToast('Goal set successfully! 🎉', 'success');
+                
+                // Hide modal
+                this.hideQuickGoalModal();
+                
+                // Update UI
+                this.updateGoals();
+                this.updateDashboard();
+            } else {
+                Utils.showToast(result.error, 'error');
+            }
+            
+        } catch (error) {
+            Utils.handleError(error, 'saving quick goal');
         }
     }
 
@@ -778,29 +954,34 @@ class BodyMetricsApp {
         // Check if we're on dashboard view
         if (this.currentView !== 'dashboard') return;
 
-        // Find or create goal indicators container
-        let indicatorsContainer = document.getElementById('goalIndicators');
-        
-        if (!indicatorsContainer) {
-            // Create indicators container
-            indicatorsContainer = Utils.createElement('div', 'goal-indicators');
-            indicatorsContainer.id = 'goalIndicators';
-            
-            // Insert after stats grid
-            const statsGrid = document.querySelector('.stats-grid');
-            if (statsGrid) {
-                statsGrid.parentNode.insertBefore(indicatorsContainer, statsGrid.nextSibling);
-            }
-        }
+        // Find the goal indicators container in the dashboard goals section
+        const indicatorsContainer = document.getElementById('goalIndicators');
+        if (!indicatorsContainer) return;
 
         const activeGoals = dataManager.getActiveGoals();
         
         if (activeGoals.length === 0) {
-            indicatorsContainer.style.display = 'none';
+            // Show the no-goals state
+            indicatorsContainer.innerHTML = `
+                <div class="no-goals-dashboard">
+                    <div class="no-goals-icon">🎯</div>
+                    <div class="no-goals-text">
+                        <strong>No goals set yet</strong>
+                        <p>Set a health goal to track your progress!</p>
+                    </div>
+                    <button class="btn btn-primary" id="setFirstGoal">Set Your First Goal</button>
+                </div>
+            `;
+            
+            // Re-attach event listener for the dynamically created button
+            const setFirstGoalBtn = document.getElementById('setFirstGoal');
+            if (setFirstGoalBtn) {
+                setFirstGoalBtn.addEventListener('click', () => this.showQuickGoalModal());
+            }
             return;
         }
 
-        indicatorsContainer.style.display = 'grid';
+        // Clear container and add goal indicators
         indicatorsContainer.innerHTML = '';
         
         activeGoals.forEach(goal => {
@@ -821,16 +1002,30 @@ class BodyMetricsApp {
             indicator.classList.add('overdue');
         }
         
+        const currentValue = goal.currentValue || 0;
+        const statusText = goal.getStatusText();
+        
         indicator.innerHTML = `
             <div class="goal-indicator-header">
-                <div class="goal-indicator-title">${goal.type === 'bodyFat' ? 'Body Fat' : goal.type}</div>
-                <div class="goal-indicator-target">${Utils.formatNumber(goal.targetValue)}${goal.type === 'weight' ? 'kg' : '%'}</div>
+                <div class="goal-indicator-title">
+                    ${goal.type === 'bodyFat' ? '📉 Body Fat' : goal.type === 'weight' ? '⚖️ Weight' : goal.type === 'muscle' ? '💪 Muscle' : '💧 Water'}
+                </div>
+                <div class="goal-indicator-target">Target: ${Utils.formatNumber(goal.targetValue)}${goal.type === 'weight' ? 'kg' : '%'}</div>
+            </div>
+            <div class="goal-indicator-values">
+                <div class="goal-current">Current: ${Utils.formatNumber(currentValue)}${goal.type === 'weight' ? 'kg' : '%'}</div>
+                <div class="goal-remaining">
+                    ${progress.remainingValue > 0 ? `${Utils.formatNumber(Math.abs(progress.remainingValue))}${goal.type === 'weight' ? 'kg' : '%'} to go` : 'Goal achieved! 🎉'}
+                </div>
             </div>
             <div class="goal-indicator-progress">
                 <div class="goal-indicator-fill ${progress.isCompleted ? 'completed' : ''} ${progress.daysRemaining !== null && progress.daysRemaining <= 0 ? 'overdue' : ''}" 
-                     style="width: ${Math.min(100, progress.percentage)}%"></div>
+                     style="width: ${Math.min(100, Math.abs(progress.percentage))}%"></div>
             </div>
-            <div class="goal-indicator-text">${Utils.formatNumber(progress.percentage)}% complete</div>
+            <div class="goal-indicator-footer">
+                <div class="goal-indicator-text">${Utils.formatNumber(Math.abs(progress.percentage))}% ${progress.percentage >= 0 ? 'complete' : 'over target'}</div>
+                <div class="goal-status-text">${statusText}</div>
+            </div>
         `;
         
         return indicator;
