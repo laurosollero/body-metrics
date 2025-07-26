@@ -52,19 +52,19 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item active" data-view="dashboard">
-                <span class="nav-icon">📊</span>
+                <span class="nav-icon" data-icon="dashboard" data-size="20"></span>
                 <span class="nav-label">Dashboard</span>
             </button>
             <button class="nav-item" data-view="entry">
-                <span class="nav-icon">➕</span>
+                <span class="nav-icon" data-icon="add" data-size="20"></span>
                 <span class="nav-label">Add Entry</span>
             </button>
             <button class="nav-item" data-view="charts">
-                <span class="nav-icon">📈</span>
+                <span class="nav-icon" data-icon="charts" data-size="20"></span>
                 <span class="nav-label">Charts</span>
             </button>
             <button class="nav-item" data-view="profile">
-                <span class="nav-icon">👤</span>
+                <span class="nav-icon" data-icon="profile" data-size="20"></span>
                 <span class="nav-label">Profile</span>
             </button>
         </nav>
@@ -83,12 +83,12 @@
                     <div class="goals-header">
                         <h3>Your Goals</h3>
                         <button class="btn btn-secondary btn-small" id="quickSetGoal">
-                            🎯 Set Goal
+                            <span data-icon="target" data-size="16"></span> Set Goal
                         </button>
                     </div>
                     <div class="goal-indicators" id="goalIndicators">
                         <div class="no-goals-dashboard">
-                            <div class="no-goals-icon">🎯</div>
+                            <div class="no-goals-icon" data-icon="target" data-size="48"></div>
                             <div class="no-goals-text">
                                 <strong>No goals set yet</strong>
                                 <p>Set a health goal to track your progress!</p>
@@ -222,7 +222,7 @@
                         <div class="progress-summary-grid">
                             <div class="progress-card" id="weightProgress">
                                 <div class="progress-card-header">
-                                    <span class="progress-icon">⚖️</span>
+                                    <span class="progress-icon" data-icon="weight" data-size="24"></span>
                                     <span class="progress-title">Weight</span>
                                 </div>
                                 <div class="progress-stats">
@@ -233,7 +233,7 @@
                             
                             <div class="progress-card" id="bodyFatProgress">
                                 <div class="progress-card-header">
-                                    <span class="progress-icon">📉</span>
+                                    <span class="progress-icon" data-icon="bodyfat" data-size="24"></span>
                                     <span class="progress-title">Body Fat</span>
                                 </div>
                                 <div class="progress-stats">
@@ -244,7 +244,7 @@
                             
                             <div class="progress-card" id="muscleProgress">
                                 <div class="progress-card-header">
-                                    <span class="progress-icon">💪</span>
+                                    <span class="progress-icon" data-icon="muscle" data-size="24"></span>
                                     <span class="progress-title">Muscle</span>
                                 </div>
                                 <div class="progress-stats">
@@ -255,7 +255,7 @@
                             
                             <div class="progress-card" id="waterProgress">
                                 <div class="progress-card-header">
-                                    <span class="progress-icon">💧</span>
+                                    <span class="progress-icon" data-icon="water" data-size="24"></span>
                                     <span class="progress-title">Water</span>
                                 </div>
                                 <div class="progress-stats">
@@ -392,7 +392,7 @@
                                 
                                 <div class="form-group">
                                     <button type="button" class="btn btn-secondary" id="testNotification">
-                                        🔔 Send Test Notification
+                                        <span data-icon="notification" data-size="16"></span> Send Test Notification
                                     </button>
                                 </div>
                                 
@@ -409,16 +409,16 @@
                         <h3>Data Management</h3>
                         <div class="data-actions">
                             <button class="btn btn-secondary" id="exportData">
-                                📤 Export Data
+                                <span data-icon="export" data-size="16"></span> Export Data
                             </button>
                             <div class="import-section">
                                 <label for="importFile" class="btn btn-secondary">
-                                    📥 Import Data
+                                    <span data-icon="import" data-size="16"></span> Import Data
                                 </label>
                                 <input type="file" id="importFile" accept=".json" hidden>
                             </div>
                             <button class="btn btn-danger" id="clearData">
-                                🗑️ Clear All Data
+                                <span data-icon="delete" data-size="16"></span> Clear All Data
                             </button>
                         </div>
                     </div>
@@ -475,19 +475,19 @@
                         <h4>What's your goal?</h4>
                         <div class="goal-type-grid">
                             <button type="button" class="goal-type-btn" data-type="weight">
-                                <span class="goal-type-icon">⚖️</span>
+                                <span class="goal-type-icon" data-icon="weight" data-size="32"></span>
                                 <span class="goal-type-label">Weight</span>
                             </button>
                             <button type="button" class="goal-type-btn" data-type="bodyFat">
-                                <span class="goal-type-icon">📉</span>
+                                <span class="goal-type-icon" data-icon="bodyfat" data-size="32"></span>
                                 <span class="goal-type-label">Body Fat</span>
                             </button>
                             <button type="button" class="goal-type-btn" data-type="muscle">
-                                <span class="goal-type-icon">💪</span>
+                                <span class="goal-type-icon" data-icon="muscle" data-size="32"></span>
                                 <span class="goal-type-label">Muscle</span>
                             </button>
                             <button type="button" class="goal-type-btn" data-type="water">
-                                <span class="goal-type-icon">💧</span>
+                                <span class="goal-type-icon" data-icon="water" data-size="32"></span>
                                 <span class="goal-type-label">Water</span>
                             </button>
                         </div>
@@ -540,6 +540,115 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- SVG Sprite (hidden) -->
+    <div style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Dashboard Icon -->
+                <symbol id="icon-dashboard" viewBox="0 0 80 80">
+                    <rect x="10" y="10" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="20" y="20" width="15" height="15" rx="2" fill="currentColor"/>
+                    <rect x="40" y="20" width="20" height="15" rx="2" fill="currentColor" opacity="0.7"/>
+                    <rect x="20" y="40" width="25" height="15" rx="2" fill="currentColor" opacity="0.5"/>
+                    <rect x="50" y="40" width="10" height="15" rx="2" fill="currentColor" opacity="0.3"/>
+                    <rect x="20" y="60" width="40" height="3" rx="1.5" fill="currentColor" opacity="0.2"/>
+                </symbol>
+
+                <!-- Add Entry Icon -->
+                <symbol id="icon-add" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <line x1="40" y1="25" x2="40" y2="55" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="25" y1="40" x2="55" y2="40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </symbol>
+
+                <!-- Charts Icon -->
+                <symbol id="icon-charts" viewBox="0 0 80 80">
+                    <rect x="10" y="10" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="20,55 30,45 40,35 50,25 60,20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="20" cy="55" r="2" fill="currentColor"/>
+                    <circle cx="30" cy="45" r="2" fill="currentColor"/>
+                    <circle cx="40" cy="35" r="2" fill="currentColor"/>
+                    <circle cx="50" cy="25" r="2" fill="currentColor"/>
+                    <circle cx="60" cy="20" r="2" fill="currentColor"/>
+                </symbol>
+
+                <!-- Profile Icon -->
+                <symbol id="icon-profile" viewBox="0 0 80 80">
+                    <circle cx="40" cy="30" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M20 60 Q20 45 40 45 Q60 45 60 60" fill="none" stroke="currentColor" stroke-width="2"/>
+                </symbol>
+
+                <!-- Weight Icon -->
+                <symbol id="icon-weight" viewBox="0 0 80 80">
+                    <circle cx="40" cy="35" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <rect x="35" y="55" width="10" height="8" fill="currentColor"/>
+                    <path d="M30 25 L30 45 L50 45 L50 25 M35 30 L35 40 M40 30 L40 40 M45 30 L45 40" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </symbol>
+
+                <!-- Body Fat Icon -->
+                <symbol id="icon-bodyfat" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="40" cy="40" r="15" fill="currentColor" opacity="0.3"/>
+                    <text x="40" y="46" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="600" fill="currentColor">%</text>
+                </symbol>
+
+                <!-- Muscle Icon -->
+                <symbol id="icon-muscle" viewBox="0 0 80 80">
+                    <path d="M25 25 Q40 15 55 25 Q50 40 40 40 Q30 40 25 25" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M30 45 Q40 35 50 45 Q45 55 40 55 Q35 55 30 45" fill="none" stroke="currentColor" stroke-width="2"/>
+                </symbol>
+
+                <!-- Water Icon -->
+                <symbol id="icon-water" viewBox="0 0 80 80">
+                    <path d="M40 15 Q50 25 50 35 Q50 50 40 50 Q30 50 30 35 Q30 25 40 15" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="35" cy="35" r="2" fill="currentColor" opacity="0.6"/>
+                    <circle cx="42" cy="30" r="1.5" fill="currentColor" opacity="0.4"/>
+                </symbol>
+
+                <!-- Export Icon -->
+                <symbol id="icon-export" viewBox="0 0 80 80">
+                    <rect x="20" y="20" width="40" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <line x1="30" y1="30" x2="50" y2="30" stroke="currentColor" stroke-width="1"/>
+                    <line x1="30" y1="40" x2="45" y2="40" stroke="currentColor" stroke-width="1"/>
+                    <line x1="30" y1="50" x2="50" y2="50" stroke="currentColor" stroke-width="1"/>
+                    <path d="M40 15 L35 25 L45 25 Z" fill="currentColor"/>
+                </symbol>
+
+                <!-- Import Icon -->
+                <symbol id="icon-import" viewBox="0 0 80 80">
+                    <rect x="20" y="20" width="40" height="50" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <line x1="30" y1="30" x2="50" y2="30" stroke="currentColor" stroke-width="1"/>
+                    <line x1="30" y1="40" x2="45" y2="40" stroke="currentColor" stroke-width="1"/>
+                    <line x1="30" y1="50" x2="50" y2="50" stroke="currentColor" stroke-width="1"/>
+                    <path d="M40 65 L35 55 L45 55 Z" fill="currentColor"/>
+                </symbol>
+
+                <!-- Target/Goal Icon -->
+                <symbol id="icon-target" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="25" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="40" cy="40" r="15" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="40" cy="40" r="5" fill="currentColor"/>
+                </symbol>
+
+                <!-- Notification Icon -->
+                <symbol id="icon-notification" viewBox="0 0 80 80">
+                    <path d="M40 15 Q48 15 48 25 L48 40 Q48 50 55 50 L25 50 Q32 50 32 40 L32 25 Q32 15 40 15" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M36 55 Q36 60 40 60 Q44 60 44 55" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="52" cy="20" r="4" fill="#ef4444"/>
+                </symbol>
+
+                <!-- Delete Icon -->
+                <symbol id="icon-delete" viewBox="0 0 80 80">
+                    <rect x="25" y="25" width="30" height="35" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <line x1="20" y1="25" x2="60" y2="25" stroke="currentColor" stroke-width="2"/>
+                    <line x1="35" y1="20" x2="45" y2="20" stroke="currentColor" stroke-width="2"/>
+                    <line x1="35" y1="35" x2="35" y2="50" stroke="currentColor" stroke-width="1"/>
+                    <line x1="45" y1="35" x2="45" y2="50" stroke="currentColor" stroke-width="1"/>
+                </symbol>
+            </defs>
+        </svg>
     </div>
 
     <!-- Scripts -->

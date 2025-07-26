@@ -33,6 +33,9 @@ class BodyMetricsApp {
             // Initialize service worker for PWA functionality
             this.initServiceWorker();
             
+            // Replace data-icon attributes with SVG icons
+            this.initIcons();
+            
             this.isInitialized = true;
             console.log('BodyMetrics app initialized successfully');
             
@@ -1266,6 +1269,13 @@ class BodyMetricsApp {
             );
             sessionStorage.setItem('pwa-setup-shown', 'true');
         }, 3000); // Show after app loads
+    }
+
+    initIcons() {
+        // Replace all data-icon attributes with SVG icons
+        Utils.replaceIconsInElement(document.body);
+        
+        console.log('✨ SVG icons initialized');
     }
 }
 
