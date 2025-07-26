@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Personal body composition tracking application">
+    <meta name="theme-color" content="#2563eb">
+    <title>BodyMetrics - Personal Health Tracker</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/mobile.css">
+    
+    <!-- Progressive Web App meta tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BodyMetrics">
+</head>
+<body>
+    <!-- Main App Container -->
+    <div id="app" class="app-container">
+        <!-- Header Navigation -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="app-icon">⚖️</span>
+                    BodyMetrics
+                </h1>
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-item active" data-view="dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" data-view="entry">
+                <span class="nav-icon">➕</span>
+                <span class="nav-label">Add Entry</span>
+            </button>
+            <button class="nav-item" data-view="charts">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Charts</span>
+            </button>
+            <button class="nav-item" data-view="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Profile</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- Dashboard View -->
+            <section class="view active" id="dashboardView">
+                <div class="view-header">
+                    <h2>Dashboard</h2>
+                    <p class="welcome-message" id="welcomeMessage">Welcome back!</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Current Weight</div>
+                        <div class="stat-value" id="currentWeight">--</div>
+                        <div class="stat-unit">kg</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Body Fat</div>
+                        <div class="stat-value" id="currentBodyFat">--</div>
+                        <div class="stat-unit">%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Muscle Mass</div>
+                        <div class="stat-value" id="currentMuscle">--</div>
+                        <div class="stat-unit">%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Water %</div>
+                        <div class="stat-value" id="currentWater">--</div>
+                        <div class="stat-unit">%</div>
+                    </div>
+                </div>
+
+                <div class="recent-measurements">
+                    <h3>Recent Measurements</h3>
+                    <div class="measurements-table" id="recentMeasurements">
+                        <div class="no-data">No measurements yet. Add your first entry!</div>
+                    </div>
+                </div>
+
+                <button class="fab" id="quickAddBtn" aria-label="Quick add measurement">
+                    ➕
+                </button>
+            </section>
+
+            <!-- Add Entry View -->
+            <section class="view" id="entryView">
+                <div class="view-header">
+                    <h2>Add Measurement</h2>
+                </div>
+                
+                <form class="measurement-form" id="measurementForm">
+                    <div class="form-group">
+                        <label for="measurementDate">Date & Time</label>
+                        <input type="datetime-local" id="measurementDate" name="date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" name="weight" step="0.1" min="0" max="300" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bodyFat">Body Fat (%)</label>
+                        <input type="number" id="bodyFat" name="bodyFat" step="0.1" min="0" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="water">Water (%)</label>
+                        <input type="number" id="water" name="water" step="0.1" min="0" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="muscle">Muscle (%)</label>
+                        <input type="number" id="muscle" name="muscle" step="0.1" min="0" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="boneMass">Bone Mass (kg)</label>
+                        <input type="number" id="boneMass" name="boneMass" step="0.1" min="0" max="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes (optional)</label>
+                        <textarea id="notes" name="notes" rows="3" placeholder="Any additional notes..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Measurement</button>
+                        <button type="button" class="btn btn-secondary" id="saveAndAddAnother">Save & Add Another</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Charts View -->
+            <section class="view" id="chartsView">
+                <div class="view-header">
+                    <h2>Trend Charts</h2>
+                    <div class="chart-controls">
+                        <select id="chartPeriod" class="period-selector">
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-section">
+                        <h3>Weight Trend</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="weightChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-section">
+                        <h3>Body Composition</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="compositionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile View -->
+            <section class="view" id="profileView">
+                <div class="view-header">
+                    <h2>Profile & Settings</h2>
+                </div>
+                
+                <div class="profile-sections">
+                    <div class="profile-section">
+                        <h3>Personal Information</h3>
+                        <form class="profile-form" id="profileForm">
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <input type="number" id="age" name="age" min="1" max="120">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="height">Height (cm)</label>
+                                <input type="number" id="height" name="height" min="50" max="250">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="gender">
+                                    <option value="">Select...</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="activityLevel">Activity Level</label>
+                                <select id="activityLevel" name="activityLevel">
+                                    <option value="">Select...</option>
+                                    <option value="sedentary">Sedentary</option>
+                                    <option value="light">Light</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="active">Active</option>
+                                    <option value="very_active">Very Active</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </form>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>Data Management</h3>
+                        <div class="data-actions">
+                            <button class="btn btn-secondary" id="exportData">
+                                📤 Export Data
+                            </button>
+                            <div class="import-section">
+                                <label for="importFile" class="btn btn-secondary">
+                                    📥 Import Data
+                                </label>
+                                <input type="file" id="importFile" accept=".json" hidden>
+                            </div>
+                            <button class="btn btn-danger" id="clearData">
+                                🗑️ Clear All Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>About</h3>
+                        <p class="about-text">
+                            BodyMetrics v1.0 - A privacy-first body composition tracker.
+                            All data is stored locally on your device.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm Action</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
+                <button class="btn btn-danger" id="confirmAction">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-content" id="toastContent"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

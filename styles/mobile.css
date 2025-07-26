@@ -1,0 +1,295 @@
+/* Mobile-Specific Styles */
+
+/* Touch-friendly interactions */
+@media (max-width: 768px) {
+  /* Ensure minimum touch target size */
+  .btn,
+  .nav-item,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+  
+  /* Optimize form layouts for small screens */
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Stats grid - single column on very small screens */
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Data actions - stack vertically */
+  .data-actions {
+    gap: var(--spacing-sm);
+  }
+  
+  .data-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Chart sections - reduce padding */
+  .chart-section {
+    padding: var(--spacing-md);
+  }
+  
+  .chart-wrapper {
+    height: 250px;
+  }
+  
+  /* Profile sections - reduce padding */
+  .profile-section {
+    padding: var(--spacing-md);
+  }
+  
+  /* Modal adjustments */
+  .modal-content {
+    margin: var(--spacing-md);
+    max-width: none;
+    width: auto;
+  }
+  
+  /* Reduce content padding on small screens */
+  .view {
+    padding: var(--spacing-sm);
+  }
+  
+  /* Header adjustments */
+  .header-content {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .app-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  /* Recent measurements - horizontal scroll */
+  .measurements-table {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Form groups - reduce margin */
+  .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  /* View headers - reduce margin */
+  .view-header {
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .view-header h2 {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* iPhone SE and similar small devices */
+@media (max-width: 375px) {
+  :root {
+    --content-padding: var(--spacing-sm);
+  }
+  
+  .fab {
+    width: 48px;
+    height: 48px;
+    font-size: var(--font-size-lg);
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-md));
+    right: var(--spacing-md);
+  }
+  
+  .stats-grid {
+    gap: var(--spacing-sm);
+  }
+  
+  .stat-card {
+    padding: var(--spacing-md);
+  }
+  
+  .stat-value {
+    font-size: var(--font-size-xl);
+  }
+  
+  .nav-icon {
+    font-size: var(--font-size-base);
+  }
+  
+  .nav-label {
+    font-size: 0.75rem;
+  }
+  
+  .chart-wrapper {
+    height: 200px;
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) and (max-height: 500px) {
+  .view {
+    padding: var(--spacing-sm);
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .fab {
+    bottom: var(--spacing-md);
+  }
+  
+  .chart-wrapper {
+    height: 200px;
+  }
+  
+  .view-header {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .form-group {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  .app-icon {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #0f172a;
+    --surface-color: #1e293b;
+    --text-color: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+  }
+  
+  .bottom-nav,
+  .app-header {
+    background-color: var(--surface-color);
+  }
+  
+  .nav-item:hover {
+    background-color: var(--background-color);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .fab:hover {
+    transform: none;
+  }
+  
+  .btn:hover {
+    transform: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.nav-item:focus,
+.btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Hide focus outline for mouse users */
+.nav-item:focus:not(:focus-visible),
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Improve tap highlighting */
+.nav-item,
+.btn,
+.fab {
+  -webkit-tap-highlight-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Prevent text selection on interactive elements */
+.nav-item,
+.btn,
+.fab,
+.modal-close {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Improve form input appearance on iOS */
+input,
+select,
+textarea {
+  -webkit-appearance: none;
+  border-radius: var(--radius-md);
+}
+
+/* Fix iOS input zoom */
+@media screen and (max-width: 768px) {
+  input[type="number"],
+  input[type="datetime-local"],
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Smooth scrolling areas */
+.main-content,
+.measurements-table {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Pull-to-refresh prevention */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Safe area insets for devices with notches */
+@supports (padding: max(0px)) {
+  .app-header {
+    padding-left: max(var(--content-padding), env(safe-area-inset-left));
+    padding-right: max(var(--content-padding), env(safe-area-inset-right));
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .bottom-nav {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .main-content {
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  }
+  
+  .fab {
+    bottom: calc(var(--bottom-nav-height) + var(--spacing-lg) + env(safe-area-inset-bottom));
+    right: max(var(--spacing-lg), env(safe-area-inset-right));
+  }
+}
