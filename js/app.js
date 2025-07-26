@@ -509,6 +509,13 @@ class BodyMetricsApp {
             if (result.success) {
                 Utils.showToast('Measurement saved successfully!', 'success');
                 
+                // Show achievement notifications
+                if (result.achievements && result.achievements.length > 0) {
+                    result.achievements.forEach(achievement => {
+                        Utils.showAchievementNotification(achievement);
+                    });
+                }
+                
                 if (addAnother) {
                     // Clear form but keep date
                     const currentDate = form.querySelector('[name="date"]').value;
@@ -583,6 +590,13 @@ class BodyMetricsApp {
             if (result.success) {
                 Utils.showToast('Goal set successfully!', 'success');
                 
+                // Show achievement notifications
+                if (result.achievements && result.achievements.length > 0) {
+                    result.achievements.forEach(achievement => {
+                        Utils.showAchievementNotification(achievement);
+                    });
+                }
+                
                 // Clear form
                 Utils.clearForm(form);
                 
@@ -622,6 +636,13 @@ class BodyMetricsApp {
             
             if (result.success) {
                 Utils.showToast('Goal set successfully! 🎉', 'success');
+                
+                // Show achievement notifications
+                if (result.achievements && result.achievements.length > 0) {
+                    result.achievements.forEach(achievement => {
+                        Utils.showAchievementNotification(achievement);
+                    });
+                }
                 
                 // Hide modal
                 this.hideQuickGoalModal();

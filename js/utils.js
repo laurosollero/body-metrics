@@ -266,6 +266,107 @@ class Utils {
         }, duration);
     }
 
+    // Achievement notification queue
+    static achievementQueue = [];
+    static isShowingAchievement = false;
+
+    // Achievement notifications with queue system
+    static showAchievementNotification(achievement, duration = 4000) {
+        // Add to queue if currently showing an achievement
+        if (this.isShowingAchievement) {
+            this.achievementQueue.push(achievement);
+            return;
+        }
+        
+        this.displayAchievement(achievement, duration);
+    }
+
+    static displayAchievement(achievement, duration = 4000) {
+        const notification = document.getElementById('achievementNotification');
+        const icon = document.getElementById('achievementIcon');
+        const name = document.getElementById('achievementName');
+        const description = document.getElementById('achievementDescription');
+        const points = document.getElementById('achievementPoints');
+        
+        if (!notification || !icon || !name || !description || !points) {
+            console.warn('Achievement notification elements not found');
+            return;
+        }
+        
+        this.isShowingAchievement = true;
+        
+        // Set achievement data
+        icon.textContent = achievement.icon;
+        name.textContent = achievement.title;
+        description.textContent = achievement.description;
+        points.textContent = `+${achievement.points} points`;
+        
+        // Set rarity class
+        notification.className = `achievement-notification ${achievement.rarity} show`;
+        
+        // Play achievement sound (if available)
+        this.playAchievementSound(achievement.rarity);
+        
+        // Hide after duration
+        setTimeout(() => {
+            notification.classList.remove('show');
+            
+            // Process queue after hiding
+            setTimeout(() => {
+                this.isShowingAchievement = false;
+                
+                // Show next achievement in queue
+                if (this.achievementQueue.length > 0) {
+                    const nextAchievement = this.achievementQueue.shift();
+                    setTimeout(() => {
+                        this.showAchievementNotification(nextAchievement);
+                    }, 500); // Small delay between achievements
+                }
+            }, 500);
+        }, duration);
+        
+        // Hide rarity class after animation
+        setTimeout(() => {
+            if (!this.isShowingAchievement) {
+                notification.className = 'achievement-notification';
+            }
+        }, duration + 1000);
+    }
+
+    static playAchievementSound(rarity) {
+        // Placeholder for achievement sound effects
+        // In a real implementation, you might play different sounds based on rarity
+        try {
+            // Create a simple beep sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Different frequencies for different rarities
+            const frequencies = {
+                common: 440,
+                rare: 523,
+                epic: 659,
+                legendary: 880
+            };
+            
+            oscillator.frequency.setValueAtTime(frequencies[rarity] || 440, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (error) {
+            // Silently fail if Web Audio API is not supported
+            console.debug('Achievement sound not available:', error);
+        }
+    }
+
     // Local storage utilities
     static getStorageSize() {
         let total = 0;

@@ -1104,6 +1104,145 @@ body {
   background-color: var(--warning-color);
 }
 
+/* Achievement Notification */
+.achievement-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  z-index: 1002;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 90vw;
+  width: 400px;
+}
+
+.achievement-notification.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+.achievement-content {
+  padding: var(--spacing-xl);
+  color: white;
+  text-align: center;
+}
+
+.achievement-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.achievement-badge {
+  font-size: var(--font-size-2xl);
+  animation: bounceIn 0.6s ease;
+}
+
+.achievement-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.achievement-body {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  backdrop-filter: blur(10px);
+}
+
+.achievement-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+.achievement-text {
+  flex: 1;
+  text-align: left;
+}
+
+.achievement-name {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+}
+
+.achievement-description {
+  font-size: var(--font-size-base);
+  opacity: 0.9;
+  margin-bottom: var(--spacing-sm);
+}
+
+.achievement-points {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: inline-block;
+}
+
+.achievement-notification.rare {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.achievement-notification.epic {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.achievement-notification.legendary {
+  background: linear-gradient(135deg, #f59e0b, #d97706, #f59e0b);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

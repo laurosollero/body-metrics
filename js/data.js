@@ -4,7 +4,8 @@ const DATA_KEYS = {
     PROFILE: 'bodymetrics_profile',
     MEASUREMENTS: 'bodymetrics_measurements',
     SETTINGS: 'bodymetrics_settings',
-    GOALS: 'bodymetrics_goals'
+    GOALS: 'bodymetrics_goals',
+    ACHIEVEMENTS: 'bodymetrics_achievements'
 };
 
 // Data Models
@@ -234,6 +235,218 @@ class Goal {
     }
 }
 
+class Achievement {
+    constructor(data = {}) {
+        this.id = data.id || this.generateId();
+        this.type = data.type || ''; // 'milestone', 'goal_completed', 'streak', 'improvement'
+        this.category = data.category || ''; // 'weight', 'measurements', 'goals', 'usage'
+        this.title = data.title || '';
+        this.description = data.description || '';
+        this.icon = data.icon || '🏆';
+        this.value = data.value || null; // The achievement threshold/value
+        this.currentValue = data.currentValue || 0; // Current progress toward achievement
+        this.isUnlocked = data.isUnlocked || false;
+        this.unlockedAt = data.unlockedAt || null;
+        this.progress = data.progress || 0; // 0-100
+        this.rarity = data.rarity || 'common'; // 'common', 'rare', 'epic', 'legendary'
+        this.points = data.points || 10; // Achievement points
+        this.createdAt = data.createdAt || new Date().toISOString();
+    }
+
+    generateId() {
+        return `achievement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    unlock() {
+        if (!this.isUnlocked) {
+            this.isUnlocked = true;
+            this.unlockedAt = new Date().toISOString();
+            this.progress = 100;
+            this.currentValue = this.value;
+            return true; // Achievement was newly unlocked
+        }
+        return false; // Already unlocked
+    }
+
+    updateProgress(currentValue) {
+        this.currentValue = currentValue;
+        
+        if (this.value && this.value > 0) {
+            this.progress = Math.min(100, (currentValue / this.value) * 100);
+            
+            if (this.progress >= 100 && !this.isUnlocked) {
+                return this.unlock();
+            }
+        }
+        
+        return false;
+    }
+
+    getRarityColor() {
+        const colors = {
+            common: '#64748b',
+            rare: '#3b82f6',
+            epic: '#8b5cf6',
+            legendary: '#f59e0b'
+        };
+        return colors[this.rarity] || colors.common;
+    }
+
+    getRarityName() {
+        return this.rarity.charAt(0).toUpperCase() + this.rarity.slice(1);
+    }
+}
+
+// Achievement definitions
+const ACHIEVEMENT_DEFINITIONS = {
+    // Measurement milestones
+    first_measurement: {
+        type: 'milestone',
+        category: 'measurements',
+        title: 'First Steps',
+        description: 'Added your first measurement',
+        icon: '🌟',
+        value: 1,
+        rarity: 'common',
+        points: 10
+    },
+    
+    measurement_streak_7: {
+        type: 'streak',
+        category: 'measurements',
+        title: 'Week Warrior',
+        description: 'Tracked measurements for 7 days straight',
+        icon: '🔥',
+        value: 7,
+        rarity: 'rare',
+        points: 25
+    },
+    
+    measurement_streak_30: {
+        type: 'streak',
+        category: 'measurements',
+        title: 'Monthly Master',
+        description: 'Tracked measurements for 30 days straight',
+        icon: '⚡',
+        value: 30,
+        rarity: 'epic',
+        points: 50
+    },
+    
+    measurement_count_50: {
+        type: 'milestone',
+        category: 'measurements',
+        title: 'Dedicated Tracker',
+        description: 'Recorded 50 measurements',
+        icon: '📊',
+        value: 50,
+        rarity: 'rare',
+        points: 30
+    },
+    
+    measurement_count_100: {
+        type: 'milestone',
+        category: 'measurements',
+        title: 'Century Club',
+        description: 'Recorded 100 measurements',
+        icon: '💯',
+        value: 100,
+        rarity: 'epic',
+        points: 75
+    },
+    
+    // Goal achievements
+    first_goal: {
+        type: 'milestone',
+        category: 'goals',
+        title: 'Goal Setter',
+        description: 'Set your first health goal',
+        icon: '🎯',
+        value: 1,
+        rarity: 'common',
+        points: 15
+    },
+    
+    goal_completed: {
+        type: 'goal_completed',
+        category: 'goals',
+        title: 'Goal Crusher',
+        description: 'Completed your first goal',
+        icon: '🏆',
+        value: 1,
+        rarity: 'rare',
+        points: 50
+    },
+    
+    goals_completed_5: {
+        type: 'goal_completed',
+        category: 'goals',
+        title: 'Achievement Hunter',
+        description: 'Completed 5 goals',
+        icon: '🏅',
+        value: 5,
+        rarity: 'epic',
+        points: 100
+    },
+    
+    // Weight loss achievements
+    weight_loss_5kg: {
+        type: 'improvement',
+        category: 'weight',
+        title: 'First Five',
+        description: 'Lost 5kg from your starting weight',
+        icon: '⚖️',
+        value: 5,
+        rarity: 'rare',
+        points: 40
+    },
+    
+    weight_loss_10kg: {
+        type: 'improvement',
+        category: 'weight',
+        title: 'Perfect Ten',
+        description: 'Lost 10kg from your starting weight',
+        icon: '💪',
+        value: 10,
+        rarity: 'epic',
+        points: 75
+    },
+    
+    body_fat_reduction_5: {
+        type: 'improvement',
+        category: 'body_fat',
+        title: 'Fat Fighter',
+        description: 'Reduced body fat by 5 percentage points',
+        icon: '📉',
+        value: 5,
+        rarity: 'rare',
+        points: 45
+    },
+    
+    // Consistency achievements
+    consistent_weekly: {
+        type: 'streak',
+        category: 'usage',
+        title: 'Weekly Warrior',
+        description: 'Used the app consistently for 4 weeks',
+        icon: '📅',
+        value: 4,
+        rarity: 'rare',
+        points: 35
+    },
+    
+    early_bird: {
+        type: 'milestone',
+        category: 'usage',
+        title: 'Early Bird',
+        description: 'Logged 10 measurements before 9 AM',
+        icon: '🌅',
+        value: 10,
+        rarity: 'rare',
+        points: 25
+    }
+};
+
 // Data Manager Class
 class DataManager {
     constructor() {
@@ -241,6 +454,7 @@ class DataManager {
         this.measurements = [];
         this.settings = null;
         this.goals = [];
+        this.achievements = [];
         this.loadAllData();
     }
 
@@ -322,7 +536,10 @@ class DataManager {
             // Update goal progress with new measurement
             this.updateGoalProgress();
             
-            return { success: true, measurement };
+            // Check for new achievements
+            const newAchievements = this.checkAchievements();
+            
+            return { success: true, measurement, achievements: newAchievements };
         } catch (error) {
             console.error('Error saving measurement:', error);
             return { success: false, error: error.message };
@@ -434,7 +651,11 @@ class DataManager {
             
             this.goals.push(goal);
             localStorage.setItem(DATA_KEYS.GOALS, JSON.stringify(this.goals));
-            return { success: true, goal };
+            
+            // Check for new achievements
+            const newAchievements = this.checkAchievements();
+            
+            return { success: true, goal, achievements: newAchievements };
         } catch (error) {
             console.error('Error saving goal:', error);
             return { success: false, error: error.message };
@@ -589,6 +810,235 @@ class DataManager {
         }));
     }
 
+    // Achievement Management
+    loadAchievements() {
+        try {
+            const data = localStorage.getItem(DATA_KEYS.ACHIEVEMENTS);
+            if (data) {
+                const achievements = JSON.parse(data);
+                this.achievements = achievements.map(a => new Achievement(a));
+            } else {
+                this.achievements = [];
+                this.initializeAchievements();
+            }
+        } catch (error) {
+            console.error('Error loading achievements:', error);
+            this.achievements = [];
+            this.initializeAchievements();
+        }
+        return this.achievements;
+    }
+
+    initializeAchievements() {
+        // Create achievements from definitions
+        for (const [key, definition] of Object.entries(ACHIEVEMENT_DEFINITIONS)) {
+            const achievement = new Achievement({
+                ...definition,
+                id: key
+            });
+            this.achievements.push(achievement);
+        }
+        this.saveAchievements();
+    }
+
+    saveAchievements() {
+        try {
+            localStorage.setItem(DATA_KEYS.ACHIEVEMENTS, JSON.stringify(this.achievements));
+        } catch (error) {
+            console.error('Error saving achievements:', error);
+        }
+    }
+
+    checkAchievements() {
+        const newlyUnlocked = [];
+        
+        // Check measurement-based achievements
+        this.checkMeasurementAchievements(newlyUnlocked);
+        
+        // Check goal-based achievements
+        this.checkGoalAchievements(newlyUnlocked);
+        
+        // Check improvement-based achievements
+        this.checkImprovementAchievements(newlyUnlocked);
+        
+        // Check usage-based achievements
+        this.checkUsageAchievements(newlyUnlocked);
+        
+        if (newlyUnlocked.length > 0) {
+            this.saveAchievements();
+        }
+        
+        return newlyUnlocked;
+    }
+
+    checkMeasurementAchievements(newlyUnlocked) {
+        const measurementCount = this.measurements.length;
+        
+        // First measurement
+        const firstMeasurement = this.achievements.find(a => a.id === 'first_measurement');
+        if (firstMeasurement && measurementCount >= 1) {
+            if (firstMeasurement.updateProgress(measurementCount)) {
+                newlyUnlocked.push(firstMeasurement);
+            }
+        }
+        
+        // Measurement count milestones
+        const countMilestones = ['measurement_count_50', 'measurement_count_100'];
+        countMilestones.forEach(milestoneId => {
+            const achievement = this.achievements.find(a => a.id === milestoneId);
+            if (achievement) {
+                if (achievement.updateProgress(measurementCount)) {
+                    newlyUnlocked.push(achievement);
+                }
+            }
+        });
+        
+        // Measurement streaks
+        const currentStreak = this.calculateMeasurementStreak();
+        const streakAchievements = ['measurement_streak_7', 'measurement_streak_30'];
+        streakAchievements.forEach(streakId => {
+            const achievement = this.achievements.find(a => a.id === streakId);
+            if (achievement) {
+                if (achievement.updateProgress(currentStreak)) {
+                    newlyUnlocked.push(achievement);
+                }
+            }
+        });
+    }
+
+    checkGoalAchievements(newlyUnlocked) {
+        const goalCount = this.goals.length;
+        const completedGoalsCount = this.getCompletedGoals().length;
+        
+        // First goal
+        const firstGoal = this.achievements.find(a => a.id === 'first_goal');
+        if (firstGoal && goalCount >= 1) {
+            if (firstGoal.updateProgress(goalCount)) {
+                newlyUnlocked.push(firstGoal);
+            }
+        }
+        
+        // Goal completion achievements
+        const goalCompleted = this.achievements.find(a => a.id === 'goal_completed');
+        if (goalCompleted && completedGoalsCount >= 1) {
+            if (goalCompleted.updateProgress(completedGoalsCount)) {
+                newlyUnlocked.push(goalCompleted);
+            }
+        }
+        
+        const goals5 = this.achievements.find(a => a.id === 'goals_completed_5');
+        if (goals5 && completedGoalsCount >= 5) {
+            if (goals5.updateProgress(completedGoalsCount)) {
+                newlyUnlocked.push(goals5);
+            }
+        }
+    }
+
+    checkImprovementAchievements(newlyUnlocked) {
+        if (this.measurements.length < 2) return;
+        
+        const firstMeasurement = this.measurements[this.measurements.length - 1]; // Oldest
+        const latestMeasurement = this.measurements[0]; // Newest
+        
+        // Weight loss achievements
+        if (firstMeasurement.weight && latestMeasurement.weight) {
+            const weightLoss = firstMeasurement.weight - latestMeasurement.weight;
+            
+            const weight5kg = this.achievements.find(a => a.id === 'weight_loss_5kg');
+            if (weight5kg && weightLoss >= 5) {
+                if (weight5kg.updateProgress(weightLoss)) {
+                    newlyUnlocked.push(weight5kg);
+                }
+            }
+            
+            const weight10kg = this.achievements.find(a => a.id === 'weight_loss_10kg');
+            if (weight10kg && weightLoss >= 10) {
+                if (weight10kg.updateProgress(weightLoss)) {
+                    newlyUnlocked.push(weight10kg);
+                }
+            }
+        }
+        
+        // Body fat reduction
+        if (firstMeasurement.bodyFatPercent && latestMeasurement.bodyFatPercent) {
+            const bodyFatReduction = firstMeasurement.bodyFatPercent - latestMeasurement.bodyFatPercent;
+            
+            const bodyFat5 = this.achievements.find(a => a.id === 'body_fat_reduction_5');
+            if (bodyFat5 && bodyFatReduction >= 5) {
+                if (bodyFat5.updateProgress(bodyFatReduction)) {
+                    newlyUnlocked.push(bodyFat5);
+                }
+            }
+        }
+    }
+
+    checkUsageAchievements(newlyUnlocked) {
+        // Early bird achievement
+        const morningMeasurements = this.measurements.filter(m => {
+            const hour = new Date(m.date).getHours();
+            return hour < 9;
+        }).length;
+        
+        const earlyBird = this.achievements.find(a => a.id === 'early_bird');
+        if (earlyBird && morningMeasurements >= 10) {
+            if (earlyBird.updateProgress(morningMeasurements)) {
+                newlyUnlocked.push(earlyBird);
+            }
+        }
+    }
+
+    calculateMeasurementStreak() {
+        if (this.measurements.length === 0) return 0;
+        
+        const sortedMeasurements = [...this.measurements]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let streak = 1;
+        let currentDate = new Date(sortedMeasurements[0].date);
+        
+        for (let i = 1; i < sortedMeasurements.length; i++) {
+            const measurementDate = new Date(sortedMeasurements[i].date);
+            const daysDiff = Math.floor((currentDate - measurementDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff === 1) {
+                streak++;
+                currentDate = measurementDate;
+            } else if (daysDiff > 1) {
+                break;
+            }
+        }
+        
+        return streak;
+    }
+
+    // Achievement queries
+    getUnlockedAchievements() {
+        return this.achievements.filter(a => a.isUnlocked);
+    }
+
+    getLockedAchievements() {
+        return this.achievements.filter(a => !a.isUnlocked);
+    }
+
+    getAchievementProgress() {
+        const unlocked = this.getUnlockedAchievements().length;
+        const total = this.achievements.length;
+        const totalPoints = this.getUnlockedAchievements().reduce((sum, a) => sum + a.points, 0);
+        
+        return {
+            unlocked,
+            total,
+            percentage: total > 0 ? (unlocked / total) * 100 : 0,
+            totalPoints
+        };
+    }
+
+    getRecentAchievements(limit = 5) {
+        return this.getUnlockedAchievements()
+            .sort((a, b) => new Date(b.unlockedAt) - new Date(a.unlockedAt))
+            .slice(0, limit);
+    }
+
     // Data Import/Export
     exportData() {
         try {
@@ -597,6 +1047,7 @@ class DataManager {
                 measurements: this.measurements,
                 settings: this.settings,
                 goals: this.goals,
+                achievements: this.achievements,
                 exportDate: new Date().toISOString(),
                 version: '1.1'
             };
@@ -633,7 +1084,8 @@ class DataManager {
                 profile: this.profile,
                 measurements: this.measurements,
                 settings: this.settings,
-                goals: this.goals
+                goals: this.goals,
+                achievements: this.achievements
             };
             
             // Import profile
@@ -677,6 +1129,16 @@ class DataManager {
                             console.warn(`Skipped goal: ${result.error}`);
                         }
                     }
+                }
+                
+                // Import achievements
+                if (importData.achievements && Array.isArray(importData.achievements)) {
+                    this.achievements = [];
+                    for (const achievementData of importData.achievements) {
+                        const achievement = new Achievement(achievementData);
+                        this.achievements.push(achievement);
+                    }
+                    this.saveAchievements();
                 }
                 
                 return { 
