@@ -554,6 +554,120 @@ class Utils {
         // You could also send to error reporting service here
         return { error: userMessage };
     }
+
+    // Notification Manager
+    static async requestNotificationPermission() {
+        if (!('Notification' in window)) {
+            return { success: false, error: 'Notifications not supported' };
+        }
+
+        if (Notification.permission === 'granted') {
+            return { success: true, permission: 'granted' };
+        }
+
+        if (Notification.permission === 'denied') {
+            return { success: false, error: 'Notifications are blocked', permission: 'denied' };
+        }
+
+        try {
+            const permission = await Notification.requestPermission();
+            return { 
+                success: permission === 'granted', 
+                permission,
+                error: permission === 'denied' ? 'Notifications were denied' : null
+            };
+        } catch (error) {
+            return { success: false, error: 'Failed to request permission', permission: 'default' };
+        }
+    }
+
+    static scheduleWeeklyReminder(dayOfWeek, time) {
+        // Calculate next occurrence of the specified day and time
+        const now = new Date();
+        const [hours, minutes] = time.split(':').map(Number);
+        
+        const nextReminder = new Date();
+        nextReminder.setHours(hours, minutes, 0, 0);
+        
+        // Calculate days until target day
+        const daysUntilTarget = (dayOfWeek - now.getDay() + 7) % 7;
+        
+        // If it's the same day but past the time, schedule for next week
+        if (daysUntilTarget === 0 && now.getTime() > nextReminder.getTime()) {
+            nextReminder.setDate(nextReminder.getDate() + 7);
+        } else {
+            nextReminder.setDate(nextReminder.getDate() + daysUntilTarget);
+        }
+
+        return nextReminder;
+    }
+
+    static async registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) {
+            console.warn('Service Worker not supported');
+            return { success: false, error: 'Service Worker not supported' };
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('Service Worker registered:', registration);
+            
+            // Wait for the service worker to be ready
+            await navigator.serviceWorker.ready;
+            
+            return { success: true, registration };
+        } catch (error) {
+            console.error('Service Worker registration failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    static getDayName(dayNumber) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[dayNumber] || 'Unknown';
+    }
+
+    static formatTime12Hour(time24) {
+        const [hours, minutes] = time24.split(':');
+        const hour12 = parseInt(hours) % 12 || 12;
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+        return `${hour12}:${minutes} ${ampm}`;
+    }
+
+    static async enableNotifications(settings) {
+        // Request permission first
+        const permissionResult = await this.requestNotificationPermission();
+        
+        if (!permissionResult.success) {
+            return permissionResult;
+        }
+
+        // Register service worker
+        const swResult = await this.registerServiceWorker();
+        
+        if (!swResult.success) {
+            return { success: false, error: 'Failed to register service worker: ' + swResult.error };
+        }
+
+        // Store settings
+        settings.notifications.permission = permissionResult.permission;
+        settings.notifications.enabled = true;
+
+        return { success: true, message: 'Notifications enabled successfully!' };
+    }
+
+    static showTestNotification() {
+        if (Notification.permission === 'granted') {
+            new Notification('BodyMetrics Test', {
+                body: 'Notifications are working! You\'ll receive weekly reminders to track your progress. 📊',
+                icon: '/icons/icon-192x192.png',
+                badge: '/icons/icon-96x96.png',
+                tag: 'test-notification'
+            });
+            return true;
+        }
+        return false;
+    }
 }
 
 // Export for global use

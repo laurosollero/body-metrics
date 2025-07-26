@@ -102,6 +102,14 @@ class AppSettings {
         this.theme = data.theme || 'light';
         this.defaultView = data.defaultView || 'dashboard';
         this.chartPeriod = data.chartPeriod || 30;
+        this.notifications = data.notifications || {
+            enabled: false,
+            frequency: 'weekly', // weekly, daily, custom
+            time: '09:00', // 24-hour format HH:mm
+            dayOfWeek: 1, // 0 = Sunday, 1 = Monday, etc.
+            lastReminder: null,
+            permission: 'default' // default, granted, denied
+        };
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
 

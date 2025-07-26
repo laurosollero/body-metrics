@@ -30,6 +30,9 @@ class BodyMetricsApp {
             // Set initial form values
             this.setCurrentDateTime();
             
+            // Initialize service worker for PWA functionality
+            this.initServiceWorker();
+            
             this.isInitialized = true;
             console.log('BodyMetrics app initialized successfully');
             
@@ -70,6 +73,28 @@ class BodyMetricsApp {
         const quickGoalForm = document.getElementById('quickGoalForm');
         if (quickGoalForm) {
             quickGoalForm.addEventListener('submit', this.handleFormSubmission);
+        }
+
+        const notificationForm = document.getElementById('notificationForm');
+        if (notificationForm) {
+            notificationForm.addEventListener('submit', this.handleFormSubmission);
+        }
+
+        // Notification checkbox toggle
+        const notificationsEnabled = document.getElementById('notificationsEnabled');
+        const notificationSettings = document.getElementById('notificationSettings');
+        if (notificationsEnabled && notificationSettings) {
+            notificationsEnabled.addEventListener('change', (e) => {
+                notificationSettings.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
+
+        // Test notification button
+        const testNotificationBtn = document.getElementById('testNotification');
+        if (testNotificationBtn) {
+            testNotificationBtn.addEventListener('click', () => {
+                this.sendTestNotification();
+            });
         }
 
         // Save and add another button
@@ -470,6 +495,8 @@ class BodyMetricsApp {
             this.saveGoal();
         } else if (form.id === 'quickGoalForm') {
             this.saveQuickGoal();
+        } else if (form.id === 'notificationForm') {
+            this.saveNotificationSettings();
         }
     }
 
@@ -776,6 +803,7 @@ class BodyMetricsApp {
         this.updateCharts();
         this.updateProfile();
         this.updateGoals();
+        this.loadNotificationSettings();
     }
 
     updateDashboard() {
@@ -1079,6 +1107,122 @@ class BodyMetricsApp {
         const dateInput = document.getElementById('measurementDate');
         if (dateInput) {
             dateInput.value = Utils.getCurrentDateTime();
+        }
+    }
+
+    async saveNotificationSettings() {
+        try {
+            const form = document.getElementById('notificationForm');
+            const formData = Utils.getFormData(form);
+            
+            const notificationSettings = {
+                enabled: form.querySelector('#notificationsEnabled').checked,
+                dayOfWeek: parseInt(formData.dayOfWeek),
+                time: formData.time,
+                frequency: 'weekly'
+            };
+
+            // If notifications are being enabled for the first time
+            if (notificationSettings.enabled && (!dataManager.settings.notifications.enabled || dataManager.settings.notifications.permission !== 'granted')) {
+                const result = await Utils.enableNotifications(dataManager.settings);
+                
+                if (!result.success) {
+                    Utils.showToast(result.error, 'error');
+                    // Reset checkbox if permission failed
+                    form.querySelector('#notificationsEnabled').checked = false;
+                    return;
+                }
+                
+                Utils.showToast(result.message, 'success');
+            }
+
+            // Update settings
+            dataManager.settings.notifications = {
+                ...dataManager.settings.notifications,
+                ...notificationSettings
+            };
+
+            const saveResult = dataManager.saveSettings(dataManager.settings);
+            
+            if (saveResult.success) {
+                Utils.showToast('Notification settings saved!', 'success');
+                this.updateNotificationStatus();
+            } else {
+                Utils.showToast('Failed to save settings: ' + saveResult.error, 'error');
+            }
+            
+        } catch (error) {
+            Utils.handleError(error, 'Saving notification settings');
+        }
+    }
+
+    updateNotificationStatus() {
+        const statusElement = document.getElementById('notificationStatus');
+        const statusText = document.getElementById('statusText');
+        
+        if (!statusElement || !statusText || !dataManager.settings) return;
+
+        const notifications = dataManager.settings.notifications;
+        
+        if (!notifications.enabled) {
+            statusElement.className = 'notification-status';
+            statusText.textContent = 'Notifications are disabled';
+        } else if (notifications.permission === 'granted') {
+            statusElement.className = 'notification-status granted';
+            const dayName = Utils.getDayName(notifications.dayOfWeek);
+            const timeFormatted = Utils.formatTime12Hour(notifications.time);
+            statusText.textContent = `✅ Reminders set for ${dayName}s at ${timeFormatted}`;
+        } else if (notifications.permission === 'denied') {
+            statusElement.className = 'notification-status denied';
+            statusText.textContent = '❌ Notifications are blocked. Please enable them in your browser settings.';
+        } else {
+            statusElement.className = 'notification-status';
+            statusText.textContent = 'Notifications need permission';
+        }
+    }
+
+    loadNotificationSettings() {
+        const form = document.getElementById('notificationForm');
+        if (!form || !dataManager.settings) return;
+
+        const notifications = dataManager.settings.notifications;
+        
+        form.querySelector('#notificationsEnabled').checked = notifications.enabled;
+        form.querySelector('#reminderDay').value = notifications.dayOfWeek;
+        form.querySelector('#reminderTime').value = notifications.time;
+        
+        // Show/hide settings based on enabled state
+        const notificationSettings = document.getElementById('notificationSettings');
+        if (notificationSettings) {
+            notificationSettings.style.display = notifications.enabled ? 'block' : 'none';
+        }
+        
+        this.updateNotificationStatus();
+    }
+
+    sendTestNotification() {
+        const success = Utils.showTestNotification();
+        
+        if (success) {
+            Utils.showToast('Test notification sent!', 'success');
+        } else {
+            Utils.showToast('Please enable notifications first', 'warning');
+        }
+    }
+
+    async initServiceWorker() {
+        try {
+            const result = await Utils.registerServiceWorker();
+            if (result.success) {
+                console.log('Service worker registered successfully');
+                return true;
+            } else {
+                console.warn('Service worker registration failed:', result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Service worker initialization error:', error);
+            return false;
         }
     }
 }

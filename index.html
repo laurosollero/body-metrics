@@ -16,6 +16,21 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="BodyMetrics">
+    
+    <!-- iOS specific icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+    
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    
+    <!-- PWA meta tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BodyMetrics">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
 </head>
 <body>
     <!-- Main App Container -->
@@ -344,6 +359,51 @@
                                 </form>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>Notification Settings</h3>
+                        <form class="notification-form" id="notificationForm">
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="notificationsEnabled" name="enabled">
+                                    <span class="checkbox-text">Enable weekly measurement reminders</span>
+                                </label>
+                                <p class="form-help">Get reminded to track your progress once a week</p>
+                            </div>
+                            
+                            <div class="notification-settings" id="notificationSettings" style="display: none;">
+                                <div class="form-group">
+                                    <label for="reminderDay">Reminder Day</label>
+                                    <select id="reminderDay" name="dayOfWeek">
+                                        <option value="0">Sunday</option>
+                                        <option value="1" selected>Monday</option>
+                                        <option value="2">Tuesday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="4">Thursday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="reminderTime">Reminder Time</label>
+                                    <input type="time" id="reminderTime" name="time" value="09:00">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-secondary" id="testNotification">
+                                        🔔 Send Test Notification
+                                    </button>
+                                </div>
+                                
+                                <div class="notification-status" id="notificationStatus">
+                                    <p class="status-text" id="statusText">Notifications not configured</p>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Notification Settings</button>
+                        </form>
                     </div>
                     
                     <div class="profile-section">
