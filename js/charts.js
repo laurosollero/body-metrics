@@ -4,7 +4,8 @@ class ChartManager {
     constructor() {
         this.charts = {
             weight: null,
-            composition: null
+            composition: null,
+            bmi: null
         };
         this.colors = Utils.getChartColors();
         this.defaultOptions = this.getDefaultChartOptions();
@@ -212,6 +213,108 @@ class ChartManager {
         return this.charts.composition;
     }
 
+    // Initialize BMI trend chart
+    initBMIChart() {
+        const canvas = document.getElementById('bmiChart');
+        if (!canvas) return null;
+
+        const ctx = canvas.getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (this.charts.bmi) {
+            this.charts.bmi.destroy();
+        }
+
+        const config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'BMI',
+                    data: [],
+                    borderColor: this.colors.accent,
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    pointBackgroundColor: this.colors.accent,
+                    pointBorderColor: '#ffffff',
+                    pointHoverBackgroundColor: this.colors.accent,
+                    pointHoverBorderColor: '#ffffff'
+                }]
+            },
+            options: {
+                ...this.defaultOptions,
+                plugins: {
+                    ...this.defaultOptions.plugins,
+                    title: {
+                        display: false
+                    },
+                    annotation: {
+                        annotations: {
+                            underweight: {
+                                type: 'line',
+                                yMin: 18.5,
+                                yMax: 18.5,
+                                borderColor: 'rgba(59, 130, 246, 0.5)',
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'Underweight',
+                                    enabled: true,
+                                    position: 'end'
+                                }
+                            },
+                            normal: {
+                                type: 'line',
+                                yMin: 25,
+                                yMax: 25,
+                                borderColor: 'rgba(34, 197, 94, 0.5)',
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'Normal',
+                                    enabled: true,
+                                    position: 'end'
+                                }
+                            },
+                            overweight: {
+                                type: 'line',
+                                yMin: 30,
+                                yMax: 30,
+                                borderColor: 'rgba(245, 158, 11, 0.5)',
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'Overweight',
+                                    enabled: true,
+                                    position: 'end'
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    ...this.defaultOptions.scales,
+                    y: {
+                        ...this.defaultOptions.scales.y,
+                        title: {
+                            display: true,
+                            text: 'BMI',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        min: 15,
+                        max: 40
+                    }
+                }
+            }
+        };
+
+        this.charts.bmi = new Chart(ctx, config);
+        return this.charts.bmi;
+    }
+
     // Update weight chart with new data
     updateWeightChart(period = 30) {
         if (!this.charts.weight) return;
@@ -331,10 +434,53 @@ class ChartManager {
         return { slope, intercept };
     }
 
+    // Update BMI chart with new data
+    updateBMIChart(period = 30) {
+        if (!this.charts.bmi) return;
+
+        try {
+            const measurements = dataManager.getMeasurementsInPeriod(period);
+            
+            // Calculate BMI for each measurement that has weight
+            const bmiData = [];
+            const labels = [];
+            
+            measurements
+                .filter(m => m.weight && dataManager.profile && dataManager.profile.height)
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .forEach(measurement => {
+                    const bmi = Utils.calculateBMI(measurement.weight, dataManager.profile.height);
+                    if (bmi) {
+                        bmiData.push(bmi);
+                        labels.push(Utils.formatDate(measurement.date, 'short'));
+                    }
+                });
+            
+            if (labels.length === 0) {
+                // Show no data message
+                this.charts.bmi.data.labels = ['No data'];
+                this.charts.bmi.data.datasets[0].data = [null];
+            } else {
+                this.charts.bmi.data.labels = labels;
+                this.charts.bmi.data.datasets[0].data = bmiData;
+                
+                // Add trend line if we have enough data
+                if (bmiData.length >= 3) {
+                    this.addTrendLine(this.charts.bmi, { labels, data: bmiData });
+                }
+            }
+            
+            this.charts.bmi.update('none');
+        } catch (error) {
+            console.error('Error updating BMI chart:', error);
+        }
+    }
+
     // Update all charts
     updateAllCharts(period = 30) {
         this.updateWeightChart(period);
         this.updateCompositionChart(period);
+        this.updateBMIChart(period);
     }
 
     // Initialize all charts
@@ -348,6 +494,7 @@ class ChartManager {
 
         this.initWeightChart();
         this.initCompositionChart();
+        this.initBMIChart();
         this.updateAllCharts();
     }
 
@@ -360,7 +507,8 @@ class ChartManager {
         });
         this.charts = {
             weight: null,
-            composition: null
+            composition: null,
+            bmi: null
         };
     }
 

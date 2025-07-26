@@ -62,6 +62,11 @@ class BodyMetricsApp {
             profileForm.addEventListener('submit', this.handleFormSubmission);
         }
 
+        const goalForm = document.getElementById('goalForm');
+        if (goalForm) {
+            goalForm.addEventListener('submit', this.handleFormSubmission);
+        }
+
         // Save and add another button
         const saveAndAddBtn = document.getElementById('saveAndAddAnother');
         if (saveAndAddBtn) {
@@ -93,6 +98,9 @@ class BodyMetricsApp {
 
         // Form validation on input
         this.setupFormValidation();
+
+        // Goal form specific handlers
+        this.setupGoalFormHandlers();
     }
 
     setupModalListeners() {
@@ -151,6 +159,56 @@ class BodyMetricsApp {
                 this.validateInput(e.target);
             }, 300));
         });
+
+        // Real-time validation for goal form
+        const goalInputs = document.querySelectorAll('#goalForm input[type="number"]');
+        goalInputs.forEach(input => {
+            input.addEventListener('input', Utils.debounce((e) => {
+                this.validateInput(e.target);
+            }, 300));
+        });
+    }
+
+    setupGoalFormHandlers() {
+        const goalTypeSelect = document.getElementById('goalType');
+        const targetUnit = document.getElementById('targetUnit');
+        const targetValueInput = document.getElementById('targetValue');
+
+        if (goalTypeSelect && targetUnit) {
+            goalTypeSelect.addEventListener('change', (e) => {
+                const type = e.target.value;
+                
+                // Update unit display
+                switch (type) {
+                    case 'weight':
+                        targetUnit.textContent = 'kg';
+                        targetValueInput.placeholder = 'e.g., 70.0';
+                        targetValueInput.min = '0.1';
+                        targetValueInput.max = '300';
+                        break;
+                    case 'bodyFat':
+                    case 'muscle':
+                    case 'water':
+                        targetUnit.textContent = '%';
+                        targetValueInput.placeholder = 'e.g., 15.0';
+                        targetValueInput.min = '0';
+                        targetValueInput.max = '100';
+                        break;
+                    default:
+                        targetUnit.textContent = '';
+                        targetValueInput.placeholder = '';
+                        targetValueInput.removeAttribute('min');
+                        targetValueInput.removeAttribute('max');
+                }
+            });
+        }
+
+        // Set minimum date to today for target date
+        const targetDateInput = document.getElementById('targetDate');
+        if (targetDateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            targetDateInput.min = today;
+        }
     }
 
     validateInput(input) {
@@ -257,6 +315,7 @@ class BodyMetricsApp {
                 break;
             case 'profile':
                 this.updateProfile();
+                this.updateGoals();
                 break;
         }
 
@@ -273,6 +332,8 @@ class BodyMetricsApp {
             this.saveMeasurement(false);
         } else if (form.id === 'profileForm') {
             this.saveProfile();
+        } else if (form.id === 'goalForm') {
+            this.saveGoal();
         }
     }
 
@@ -358,6 +419,46 @@ class BodyMetricsApp {
             
         } catch (error) {
             Utils.handleError(error, 'saving profile');
+        }
+    }
+
+    saveGoal() {
+        try {
+            const form = document.getElementById('goalForm');
+            const formData = Utils.getFormData(form);
+            
+            // Validate target value
+            const targetValueInput = form.querySelector('[name="targetValue"]');
+            if (!this.validateInput(targetValueInput)) {
+                Utils.showToast('Please fix the validation errors', 'error');
+                return;
+            }
+
+            // Convert form data to goal object
+            const goalData = {
+                type: formData.type,
+                targetValue: Utils.parseNumber(formData.targetValue),
+                targetDate: formData.targetDate || null,
+                notes: formData.notes || ''
+            };
+
+            const result = dataManager.saveGoal(goalData);
+            
+            if (result.success) {
+                Utils.showToast('Goal set successfully!', 'success');
+                
+                // Clear form
+                Utils.clearForm(form);
+                
+                // Update UI
+                this.updateGoals();
+                this.updateDashboard();
+            } else {
+                Utils.showToast(result.error, 'error');
+            }
+            
+        } catch (error) {
+            Utils.handleError(error, 'saving goal');
         }
     }
 
@@ -477,6 +578,7 @@ class BodyMetricsApp {
         this.updateDashboard();
         this.updateCharts();
         this.updateProfile();
+        this.updateGoals();
     }
 
     updateDashboard() {
@@ -594,6 +696,167 @@ class BodyMetricsApp {
             gender: dataManager.profile.gender,
             activityLevel: dataManager.profile.activityLevel
         });
+    }
+
+    updateGoals() {
+        this.updateActiveGoalsList();
+        this.updateGoalIndicators();
+    }
+
+    updateActiveGoalsList() {
+        const container = document.getElementById('activeGoalsList');
+        if (!container) return;
+
+        const activeGoals = dataManager.getActiveGoals();
+        
+        if (activeGoals.length === 0) {
+            container.innerHTML = '<div class="no-goals">No active goals. Set one below!</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        
+        activeGoals.forEach(goal => {
+            const goalCard = this.createGoalCard(goal);
+            container.appendChild(goalCard);
+        });
+    }
+
+    createGoalCard(goal) {
+        const progress = goal.calculateProgress();
+        const statusText = goal.getStatusText();
+        
+        const card = Utils.createElement('div', 'goal-card');
+        
+        // Add status classes
+        if (progress.isCompleted) {
+            card.classList.add('completed');
+        } else if (progress.daysRemaining !== null && progress.daysRemaining <= 0) {
+            card.classList.add('overdue');
+        }
+        
+        card.innerHTML = `
+            <div class="goal-header">
+                <div class="goal-title">${goal.type === 'bodyFat' ? 'Body Fat' : goal.type}</div>
+                <div class="goal-actions">
+                    <button class="goal-action-btn" onclick="bodyMetricsApp.editGoal('${goal.id}')" title="Edit goal">
+                        ✏️
+                    </button>
+                    <button class="goal-action-btn" onclick="bodyMetricsApp.deleteGoal('${goal.id}')" title="Delete goal">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+            
+            <div class="goal-target">
+                Target: ${Utils.formatNumber(goal.targetValue)}${goal.type === 'weight' ? 'kg' : '%'}
+                ${goal.targetDate ? ` by ${Utils.formatDate(goal.targetDate, 'short')}` : ''}
+            </div>
+            
+            <div class="goal-progress">
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill ${progress.isCompleted ? 'completed' : ''} ${progress.daysRemaining !== null && progress.daysRemaining <= 0 ? 'overdue' : ''}" 
+                         style="width: ${Math.min(100, progress.percentage)}%"></div>
+                </div>
+                <div class="goal-progress-text">
+                    <span class="goal-percentage ${progress.isCompleted ? 'completed' : ''} ${progress.daysRemaining !== null && progress.daysRemaining <= 0 ? 'overdue' : ''}">
+                        ${Utils.formatNumber(progress.percentage)}%
+                    </span>
+                    <span class="goal-status ${progress.isCompleted ? 'completed' : ''} ${progress.daysRemaining !== null && progress.daysRemaining <= 0 ? 'overdue' : ''}">
+                        ${statusText}
+                    </span>
+                </div>
+            </div>
+            
+            ${goal.notes ? `<div class="goal-notes" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-sm);">${goal.notes}</div>` : ''}
+        `;
+        
+        return card;
+    }
+
+    updateGoalIndicators() {
+        // Check if we're on dashboard view
+        if (this.currentView !== 'dashboard') return;
+
+        // Find or create goal indicators container
+        let indicatorsContainer = document.getElementById('goalIndicators');
+        
+        if (!indicatorsContainer) {
+            // Create indicators container
+            indicatorsContainer = Utils.createElement('div', 'goal-indicators');
+            indicatorsContainer.id = 'goalIndicators';
+            
+            // Insert after stats grid
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.parentNode.insertBefore(indicatorsContainer, statsGrid.nextSibling);
+            }
+        }
+
+        const activeGoals = dataManager.getActiveGoals();
+        
+        if (activeGoals.length === 0) {
+            indicatorsContainer.style.display = 'none';
+            return;
+        }
+
+        indicatorsContainer.style.display = 'grid';
+        indicatorsContainer.innerHTML = '';
+        
+        activeGoals.forEach(goal => {
+            const indicator = this.createGoalIndicator(goal);
+            indicatorsContainer.appendChild(indicator);
+        });
+    }
+
+    createGoalIndicator(goal) {
+        const progress = goal.calculateProgress();
+        
+        const indicator = Utils.createElement('div', 'goal-indicator');
+        
+        // Add status classes
+        if (progress.isCompleted) {
+            indicator.classList.add('completed');
+        } else if (progress.daysRemaining !== null && progress.daysRemaining <= 0) {
+            indicator.classList.add('overdue');
+        }
+        
+        indicator.innerHTML = `
+            <div class="goal-indicator-header">
+                <div class="goal-indicator-title">${goal.type === 'bodyFat' ? 'Body Fat' : goal.type}</div>
+                <div class="goal-indicator-target">${Utils.formatNumber(goal.targetValue)}${goal.type === 'weight' ? 'kg' : '%'}</div>
+            </div>
+            <div class="goal-indicator-progress">
+                <div class="goal-indicator-fill ${progress.isCompleted ? 'completed' : ''} ${progress.daysRemaining !== null && progress.daysRemaining <= 0 ? 'overdue' : ''}" 
+                     style="width: ${Math.min(100, progress.percentage)}%"></div>
+            </div>
+            <div class="goal-indicator-text">${Utils.formatNumber(progress.percentage)}% complete</div>
+        `;
+        
+        return indicator;
+    }
+
+    // Goal management methods
+    editGoal(goalId) {
+        // For now, just show a toast - full edit functionality can be added later
+        Utils.showToast('Goal editing coming soon!', 'warning');
+    }
+
+    deleteGoal(goalId) {
+        this.showModal(
+            'Delete Goal',
+            'Are you sure you want to delete this goal? This action cannot be undone.',
+            () => {
+                const result = dataManager.deleteGoal(goalId);
+                if (result.success) {
+                    Utils.showToast('Goal deleted successfully', 'success');
+                    this.updateGoals();
+                    this.updateDashboard();
+                } else {
+                    Utils.showToast(result.error, 'error');
+                }
+            }
+        );
     }
 
     setCurrentDateTime() {
