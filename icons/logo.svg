@@ -1,0 +1,17 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main logo background -->
+  <rect x="10" y="10" width="80" height="80" rx="12" fill="#2563eb"/>
+  
+  <!-- BM Letters -->
+  <text x="50" y="45" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="white">BM</text>
+  
+  <!-- Data visualization lines (representing metrics) -->
+  <rect x="25" y="55" width="50" height="3" rx="1.5" fill="white" opacity="0.7"/>
+  <rect x="25" y="63" width="35" height="3" rx="1.5" fill="white" opacity="0.5"/>
+  <rect x="25" y="71" width="25" height="3" rx="1.5" fill="white" opacity="0.3"/>
+  
+  <!-- Small metric dots -->
+  <circle cx="75" cy="56.5" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="60" cy="64.5" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="50" cy="72.5" r="1.5" fill="white" opacity="0.3"/>
+</svg>

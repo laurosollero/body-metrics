@@ -1214,16 +1214,58 @@ class BodyMetricsApp {
         try {
             const result = await Utils.registerServiceWorker();
             if (result.success) {
-                console.log('Service worker registered successfully');
+                console.log('✅ Service worker registered successfully - PWA features enabled');
+                this.updatePWAStatus(true);
                 return true;
             } else {
-                console.warn('Service worker registration failed:', result.error);
+                console.warn('⚠️  Service worker registration failed:', result.error);
+                this.updatePWAStatus(false, result.error);
+                
+                // Show user-friendly message if on file:// protocol
+                if (location.protocol === 'file:') {
+                    this.showPWASetupMessage();
+                }
                 return false;
             }
         } catch (error) {
             console.error('Service worker initialization error:', error);
+            this.updatePWAStatus(false, error.message);
             return false;
         }
+    }
+
+    updatePWAStatus(isWorking, errorMessage = '') {
+        const statusElement = document.getElementById('swStatus');
+        const pwaStatusElement = document.getElementById('pwaStatus');
+        
+        if (!statusElement || !pwaStatusElement) return;
+        
+        if (isWorking) {
+            statusElement.textContent = '✅ PWA features active (offline, notifications)';
+            pwaStatusElement.className = 'pwa-status working';
+        } else {
+            if (location.protocol === 'file:') {
+                statusElement.textContent = '⚠️ PWA features require a web server';
+                pwaStatusElement.className = 'pwa-status warning';
+            } else {
+                statusElement.textContent = `❌ PWA features unavailable: ${errorMessage}`;
+                pwaStatusElement.className = 'pwa-status warning';
+            }
+        }
+    }
+
+    showPWASetupMessage() {
+        // Only show this message once per session
+        if (sessionStorage.getItem('pwa-setup-shown')) return;
+        
+        setTimeout(() => {
+            Utils.showToast(
+                '💡 For offline features, serve this app from a web server. See SERVER_SETUP.md for instructions.',
+                'warning',
+                8000
+            );
+            sessionStorage.setItem('pwa-setup-shown', 'true');
+        }, 3000); // Show after app loads
     }
 }
 

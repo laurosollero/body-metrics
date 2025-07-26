@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodyMetrics Icon Generator</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .icon-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .icon-preview {
+            margin: 10px 0;
+        }
+        .download-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .download-btn:hover {
+            background: #1d4ed8;
+        }
+        h1 {
+            color: #1e293b;
+            text-align: center;
+        }
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 BodyMetrics Icon Generator</h1>
+    
+    <div class="instructions">
+        <h3>How to Generate Icons:</h3>
+        <ol>
+            <li>Click the "Download PNG" buttons below for each size you need</li>
+            <li>Save the files with the exact names shown (e.g., "icon-72x72.png")</li>
+            <li>Place all PNG files in the <code>/icons/</code> folder</li>
+            <li>The PWA manifest will automatically use these icons</li>
+        </ol>
+        <p><strong>Required for PWA:</strong> 72×72, 96×96, 128×128, 144×144, 152×152, 192×192, 384×384, 512×512</p>
+    </div>
+
+    <div class="icon-grid" id="iconGrid">
+        <!-- Icons will be generated here -->
+    </div>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script>
+        // Icon sizes required for PWA
+        const iconSizes = [
+            { size: 72, name: 'icon-72x72.png', desc: 'Android small' },
+            { size: 96, name: 'icon-96x96.png', desc: 'Android medium' },
+            { size: 128, name: 'icon-128x128.png', desc: 'Android large' },
+            { size: 144, name: 'icon-144x144.png', desc: 'Windows tile' },
+            { size: 152, name: 'icon-152x152.png', desc: 'iOS iPad' },
+            { size: 180, name: 'icon-180x180.png', desc: 'iOS iPhone' },
+            { size: 192, name: 'icon-192x192.png', desc: 'Android XL' },
+            { size: 384, name: 'icon-384x384.png', desc: 'Android XXL' },
+            { size: 512, name: 'icon-512x512.png', desc: 'PWA standard' },
+            { size: 16, name: 'icon-16x16.png', desc: 'Favicon small' },
+            { size: 32, name: 'icon-32x32.png', desc: 'Favicon large' }
+        ];
+
+        // SVG content for our app logo (with vector text for better canvas rendering)
+        const svgContent = `
+            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+                <rect x="50" y="40" width="100" height="80" rx="12" fill="#2563eb"/>
+                
+                <!-- Letter B and M as vector paths -->
+                <g fill="white">
+                    <!-- B letter -->
+                    <path d="M85 55 L85 75 L92 75 Q96 75 96 71 Q96 67 92 67 L85 67 L85 63 L91 63 Q94 63 94 60 Q94 57 91 57 L85 57 Z M82 55 L82 77 L93 77 Q99 77 99 71 Q99 68 97 66 Q99 64 99 60 Q99 55 93 55 Z"/>
+                    
+                    <!-- M letter -->
+                    <path d="M102 55 L102 77 L105 77 L105 60 L110 72 L112 72 L117 60 L117 77 L120 77 L120 55 L116 55 L111 69 L106 55 Z"/>
+                </g>
+                
+                <!-- Progress bars below -->
+                <rect x="70" y="85" width="60" height="3" rx="1.5" fill="white" opacity="0.7"/>
+                <rect x="70" y="92" width="45" height="3" rx="1.5" fill="white" opacity="0.5"/>
+                <rect x="70" y="99" width="35" height="3" rx="1.5" fill="white" opacity="0.3"/>
+            </svg>
+        `;
+
+        function generateIcon(size, filename) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Create SVG blob
+            const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(svgBlob);
+            
+            const img = new Image();
+            img.onload = function() {
+                // Clear canvas and draw with proper scaling
+                ctx.clearRect(0, 0, size, size);
+                
+                // Calculate scaling to fit the icon properly
+                const scale = size / 200; // SVG viewBox is 200x160
+                const offsetY = (size - (160 * scale)) / 2; // Center vertically
+                
+                ctx.drawImage(img, 0, offsetY, size, 160 * scale);
+                
+                // Convert to PNG and download
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    link.click();
+                    
+                    URL.revokeObjectURL(link.href);
+                }, 'image/png');
+                
+                URL.revokeObjectURL(url);
+            };
+            
+            img.src = url;
+        }
+
+        function createIconCard(iconInfo) {
+            const card = document.createElement('div');
+            card.className = 'icon-card';
+            
+            card.innerHTML = `
+                <h4>${iconInfo.size}×${iconInfo.size}px</h4>
+                <div class="icon-preview">
+                    <div style="width: ${Math.min(iconInfo.size, 64)}px; height: ${Math.min(iconInfo.size, 64)}px; margin: 0 auto; background: #2563eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        BM
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #64748b; margin: 5px 0;">${iconInfo.desc}</p>
+                <button class="download-btn" onclick="generateIcon(${iconInfo.size}, '${iconInfo.name}')">
+                    Download PNG
+                </button>
+                <p style="font-size: 10px; color: #94a3b8; margin-top: 5px;">${iconInfo.name}</p>
+            `;
+            
+            return card;
+        }
+
+        // Generate icon cards
+        const grid = document.getElementById('iconGrid');
+        iconSizes.forEach(iconInfo => {
+            grid.appendChild(createIconCard(iconInfo));
+        });
+
+        // Add download all functionality
+        function downloadAll() {
+            iconSizes.forEach((iconInfo, index) => {
+                setTimeout(() => {
+                    generateIcon(iconInfo.size, iconInfo.name);
+                }, index * 500); // Stagger downloads
+            });
+        }
+
+        // Add download all button
+        const instructions = document.querySelector('.instructions');
+        const downloadAllBtn = document.createElement('button');
+        downloadAllBtn.textContent = '⬇️ Download All Icons';
+        downloadAllBtn.className = 'download-btn';
+        downloadAllBtn.style.marginTop = '10px';
+        downloadAllBtn.onclick = downloadAll;
+        instructions.appendChild(downloadAllBtn);
+    </script>
+</body>
+</html>

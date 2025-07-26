@@ -20,7 +20,6 @@
     <!-- iOS specific icons -->
     <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
     
     <!-- Standard favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
@@ -430,6 +429,16 @@
                             BodyMetrics v1.0 - A privacy-first body composition tracker.
                             All data is stored locally on your device.
                         </p>
+                        <div class="pwa-info" id="pwaInfo">
+                            <h4>Progressive Web App</h4>
+                            <p class="pwa-status" id="pwaStatus">
+                                <span id="swStatus">⚠️ PWA features require a web server</span>
+                            </p>
+                            <p class="pwa-help">
+                                For offline functionality and notifications, serve this app through a local web server. 
+                                See <strong>SERVER_SETUP.md</strong> for quick setup instructions.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -531,6 +531,41 @@ body {
   line-height: 1.6;
 }
 
+.pwa-info {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.pwa-info h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-color);
+}
+
+.pwa-status {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.pwa-status.working {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.pwa-status.warning {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.pwa-help {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* Goals Section */
 .goals-container {
   display: flex;

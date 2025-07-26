@@ -603,13 +603,19 @@ class Utils {
     }
 
     static async registerServiceWorker() {
+        // Check if we're on a supported protocol
+        if (location.protocol === 'file:') {
+            console.warn('Service Worker not supported on file:// protocol. Please serve the app through a web server.');
+            return { success: false, error: 'Service Workers require HTTP/HTTPS. Please serve this app from a web server.' };
+        }
+
         if (!('serviceWorker' in navigator)) {
             console.warn('Service Worker not supported');
-            return { success: false, error: 'Service Worker not supported' };
+            return { success: false, error: 'Service Worker not supported by this browser' };
         }
 
         try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('./sw.js');
             console.log('Service Worker registered:', registration);
             
             // Wait for the service worker to be ready
@@ -618,7 +624,16 @@ class Utils {
             return { success: true, registration };
         } catch (error) {
             console.error('Service Worker registration failed:', error);
-            return { success: false, error: error.message };
+            
+            // Provide user-friendly error messages
+            let userMessage = error.message;
+            if (error.message.includes('protocol')) {
+                userMessage = 'Please serve this app from a web server (not file://) to enable offline features.';
+            } else if (error.message.includes('scope')) {
+                userMessage = 'Service Worker scope error. Please check your server configuration.';
+            }
+            
+            return { success: false, error: userMessage };
         }
     }
 
