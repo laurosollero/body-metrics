@@ -225,6 +225,52 @@
                     </div>
                     
                     <div class="profile-section">
+                        <h3>Goals</h3>
+                        <div class="goals-container">
+                            <div class="active-goals" id="activeGoals">
+                                <h4>Active Goals</h4>
+                                <div class="goals-list" id="activeGoalsList">
+                                    <div class="no-goals">No active goals. Set one below!</div>
+                                </div>
+                            </div>
+                            
+                            <div class="add-goal">
+                                <h4>Set New Goal</h4>
+                                <form class="goal-form" id="goalForm">
+                                    <div class="form-group">
+                                        <label for="goalType">Goal Type</label>
+                                        <select id="goalType" name="type" required>
+                                            <option value="">Select goal type...</option>
+                                            <option value="weight">Weight (kg)</option>
+                                            <option value="bodyFat">Body Fat (%)</option>
+                                            <option value="muscle">Muscle Mass (%)</option>
+                                            <option value="water">Water Content (%)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="targetValue">Target Value</label>
+                                        <input type="number" id="targetValue" name="targetValue" step="0.1" required>
+                                        <span class="input-unit" id="targetUnit"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="targetDate">Target Date (optional)</label>
+                                        <input type="date" id="targetDate" name="targetDate">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="goalNotes">Notes (optional)</label>
+                                        <textarea id="goalNotes" name="notes" rows="2" placeholder="What motivates this goal?"></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">Set Goal</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
                         <h3>Data Management</h3>
                         <div class="data-actions">
                             <button class="btn btn-secondary" id="exportData">
