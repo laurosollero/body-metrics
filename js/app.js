@@ -126,6 +126,51 @@ class BodyMetricsApp {
             });
         }
 
+        // Medication tracking toggle
+        const medicationToggle = document.getElementById('medicationTrackingToggle');
+        if (medicationToggle) {
+            medicationToggle.addEventListener('change', (e) => {
+                this.handleMedicationToggle(e.target.checked);
+            });
+        }
+
+        // Medication form
+        const medicationForm = document.getElementById('medicationForm');
+        if (medicationForm) {
+            medicationForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveMedicationEvent(false);
+            });
+        }
+
+        const medicationAddBtn = document.getElementById('medicationSaveAndAdd');
+        if (medicationAddBtn) {
+            medicationAddBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.saveMedicationEvent(true);
+            });
+        }
+
+        const medicationExportBtn = document.getElementById('medicationExportBtn');
+        if (medicationExportBtn) {
+            medicationExportBtn.addEventListener('click', () => {
+                this.exportMedicationLog();
+            });
+        }
+
+        const medicationHistory = document.getElementById('medicationHistory');
+        if (medicationHistory) {
+            medicationHistory.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.medication-delete-btn');
+                if (deleteBtn) {
+                    const eventId = deleteBtn.getAttribute('data-event-id');
+                    if (eventId) {
+                        this.confirmDeleteMedication(eventId);
+                    }
+                }
+            });
+        }
+
         // Modal controls
         this.setupModalListeners();
 
@@ -479,6 +524,10 @@ class BodyMetricsApp {
                 this.updateProfile();
                 this.updateGoals();
                 break;
+            case 'medication':
+                this.updateMedicationView();
+                this.setMedicationDefaults();
+                break;
         }
 
         // Announce view change to screen readers
@@ -806,6 +855,8 @@ class BodyMetricsApp {
         this.updateCharts();
         this.updateProfile();
         this.updateGoals();
+        this.updateMedicationTrackingUI();
+        this.updateMedicationView();
         this.loadNotificationSettings();
     }
 
@@ -1106,10 +1157,291 @@ class BodyMetricsApp {
         );
     }
 
-    setCurrentDateTime() {
-        const dateInput = document.getElementById('measurementDate');
+    handleMedicationToggle(isEnabled) {
+        try {
+            if (!dataManager.settings.features) {
+                dataManager.settings.features = { medicationTracking: false };
+            }
+
+            dataManager.settings.features.medicationTracking = isEnabled;
+            const result = dataManager.saveSettings(dataManager.settings);
+
+            if (!result.success) {
+                Utils.showToast(result.error || 'Could not update medication setting', 'error');
+                const toggle = document.getElementById('medicationTrackingToggle');
+                if (toggle) {
+                    toggle.checked = !isEnabled;
+                }
+                return;
+            }
+
+            Utils.showToast(
+                isEnabled ? 'Medication tracking enabled!' : 'Medication tracking disabled.',
+                'success'
+            );
+
+            this.updateMedicationTrackingUI();
+            this.updateMedicationView();
+
+            if (isEnabled) {
+                this.setMedicationDefaults();
+            } else if (this.currentView === 'medication') {
+                this.showView('dashboard');
+            }
+        } catch (error) {
+            Utils.handleError(error, 'Updating medication tracking');
+        }
+    }
+
+    updateMedicationTrackingUI() {
+        const navItem = document.getElementById('medicationNavItem');
+        const toggle = document.getElementById('medicationTrackingToggle');
+        const statusText = document.getElementById('medicationTrackingStatus');
+
+        const enabled = !!(dataManager.settings &&
+            dataManager.settings.features &&
+            dataManager.settings.features.medicationTracking);
+
+        if (navItem) {
+            navItem.classList.toggle('hidden', !enabled);
+            if (!enabled) {
+                navItem.classList.remove('active');
+            }
+        }
+
+        if (toggle) {
+            toggle.checked = enabled;
+        }
+
+        if (statusText) {
+            statusText.textContent = enabled
+                ? 'Medication tracking is enabled.'
+                : 'Medication tracking is disabled.';
+        }
+    }
+
+    updateMedicationView() {
+        const historyContainer = document.getElementById('medicationHistory');
+        const subtitle = document.getElementById('medicationSubtitle');
+
+        const enabled = !!(dataManager.settings &&
+            dataManager.settings.features &&
+            dataManager.settings.features.medicationTracking);
+
+        if (!enabled) {
+            if (subtitle) {
+                subtitle.textContent = 'Enable medication tracking in Profile to log doses.';
+            }
+            if (historyContainer) {
+                historyContainer.innerHTML = '<div class="no-data">Medication tracking is disabled.</div>';
+            }
+            return;
+        }
+
+        this.updateMedicationSummary();
+        this.updateMedicationHistory();
+    }
+
+    updateMedicationSummary() {
+        const subtitle = document.getElementById('medicationSubtitle');
+        if (!subtitle) return;
+
+        const latestEvents = dataManager.getMedicationEvents(1);
+        if (!latestEvents || latestEvents.length === 0) {
+            subtitle.textContent = 'No medication events logged yet. Add your first dose below.';
+            return;
+        }
+
+        const latest = latestEvents[0];
+        const formattedDate = Utils.formatDateTime(latest.date);
+        const daysSince = Utils.daysBetween(latest.date, new Date().toISOString());
+        const relative = daysSince === 0
+            ? 'Today'
+            : daysSince === 1
+                ? '1 day ago'
+                : `${daysSince} days ago`;
+
+        subtitle.textContent = `Last dose: ${formattedDate} (${latest.dose}) • ${relative}`;
+    }
+
+    updateMedicationHistory() {
+        const historyContainer = document.getElementById('medicationHistory');
+        if (!historyContainer) return;
+
+        const events = dataManager.getMedicationEvents();
+        if (!events || events.length === 0) {
+            historyContainer.innerHTML = '<div class="no-data">No medication events logged yet.</div>';
+            return;
+        }
+
+        const entriesHtml = events.map(event => {
+            const formattedDate = Utils.formatDateTime(event.date);
+            const daysSince = Utils.daysBetween(event.date, new Date().toISOString());
+            const relative = daysSince === 0
+                ? 'Today'
+                : daysSince === 1
+                    ? '1 day ago'
+                    : `${daysSince} days ago`;
+
+            const dose = Utils.sanitizeHtml(event.dose);
+            const notes = event.notes ? Utils.sanitizeHtml(event.notes) : '';
+
+            return `
+                <div class="medication-event">
+                    <div class="medication-event-header">
+                        <div>
+                            <div class="medication-event-date">${formattedDate}</div>
+                            <div class="medication-event-relative">${relative}</div>
+                        </div>
+                        <button class="goal-action-btn medication-delete-btn" data-event-id="${event.id}" aria-label="Delete dose">
+                            <span data-icon="delete" data-size="18"></span>
+                        </button>
+                    </div>
+                    <div class="medication-event-dose">
+                        <span class="medication-event-label">Dose</span>
+                        <span>${dose}</span>
+                    </div>
+                    ${notes ? `<div class="medication-event-notes"><span class="medication-event-label">Notes</span><span>${notes}</span></div>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        historyContainer.innerHTML = entriesHtml;
+        Utils.replaceIconsInElement(historyContainer);
+    }
+
+    setMedicationDefaults() {
+        const enabled = !!(dataManager.settings &&
+            dataManager.settings.features &&
+            dataManager.settings.features.medicationTracking);
+
+        if (!enabled) return;
+
+        const dateInput = document.getElementById('medicationDate');
         if (dateInput) {
             dateInput.value = Utils.getCurrentDateTime();
+        }
+
+        const doseInput = document.getElementById('medicationDose');
+        if (doseInput) {
+            const lastEvent = dataManager.getMedicationEvents(1)[0];
+            if (lastEvent && lastEvent.dose) {
+                doseInput.value = lastEvent.dose;
+            } else {
+                doseInput.value = '';
+            }
+        }
+
+        const notesInput = document.getElementById('medicationNotes');
+        if (notesInput) {
+            notesInput.value = '';
+        }
+    }
+
+    saveMedicationEvent(addAnother = false) {
+        try {
+            const enabled = !!(dataManager.settings &&
+                dataManager.settings.features &&
+                dataManager.settings.features.medicationTracking);
+
+            if (!enabled) {
+                Utils.showToast('Enable medication tracking in Profile first.', 'warning');
+                return;
+            }
+
+            const form = document.getElementById('medicationForm');
+            if (!form) return;
+
+            const formData = Utils.getFormData(form);
+            const dateValue = formData.date;
+            const doseValue = (formData.dose || '').trim();
+            const notesValue = (formData.notes || '').trim();
+
+            if (!dateValue || !Utils.isValidDate(dateValue)) {
+                Utils.showToast('Please provide a valid date and time.', 'error');
+                return;
+            }
+
+            if (!doseValue) {
+                Utils.showToast('Please specify the dose taken.', 'error');
+                return;
+            }
+
+            const result = dataManager.saveMedicationEvent({
+                date: dateValue,
+                dose: doseValue,
+                notes: notesValue
+            });
+
+            if (result.success) {
+                Utils.showToast('Medication dose saved!', 'success');
+                this.updateMedicationView();
+
+                if (addAnother) {
+                    this.setMedicationDefaults();
+                    const doseInput = document.getElementById('medicationDose');
+                    if (doseInput) {
+                        doseInput.focus();
+                    }
+                } else {
+                    this.setMedicationDefaults();
+                }
+            } else {
+                Utils.showToast(result.error, 'error');
+            }
+        } catch (error) {
+            Utils.handleError(error, 'Saving medication event');
+        }
+    }
+
+    confirmDeleteMedication(eventId) {
+        this.showModal(
+            'Delete Medication Entry',
+            'Are you sure you want to delete this medication record? This action cannot be undone.',
+            () => this.deleteMedicationEvent(eventId)
+        );
+    }
+
+    deleteMedicationEvent(eventId) {
+        const result = dataManager.deleteMedicationEvent(eventId);
+        if (result.success) {
+            Utils.showToast('Medication entry deleted', 'success');
+            this.updateMedicationView();
+        } else {
+            Utils.showToast(result.error, 'error');
+        }
+    }
+
+    exportMedicationLog() {
+        const events = dataManager.getMedicationEvents();
+        if (!events || events.length === 0) {
+            Utils.showToast('No medication entries to export yet.', 'warning');
+            return;
+        }
+
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            count: events.length,
+            events
+        };
+
+        const filename = `medication-log-${new Date().toISOString().split('T')[0]}.json`;
+        Utils.downloadFile(JSON.stringify(exportData, null, 2), filename, 'application/json');
+        Utils.showToast(`Exported ${events.length} medication entries`, 'success');
+    }
+
+    setCurrentDateTime() {
+        const dateInput = document.getElementById('measurementDate');
+        const currentTime = Utils.getCurrentDateTime();
+        if (dateInput) {
+            dateInput.value = currentTime;
+        }
+
+        const medicationDateInput = document.getElementById('medicationDate');
+        if (medicationDateInput && dataManager.settings &&
+            dataManager.settings.features &&
+            dataManager.settings.features.medicationTracking) {
+            medicationDateInput.value = currentTime;
         }
     }
 

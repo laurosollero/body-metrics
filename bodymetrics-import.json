@@ -1,0 +1,445 @@
+{
+  "measurements": [
+    {
+      "date": "2025-10-15T06:27",
+      "weight": 127.8,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-15T06:27",
+      "weight": 128.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-14T05:02",
+      "weight": 129.4,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": "Enjoo"
+    },
+    {
+      "date": "2025-10-13T07:03",
+      "weight": 129.7,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-10T08:19",
+      "weight": 127.8,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-07T09:17",
+      "weight": 128.3,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-04T09:17",
+      "weight": 130,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-10-01T06:50",
+      "weight": 130.8,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-09-10T03:48",
+      "weight": 129.4,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-09-09T04:29",
+      "weight": 130.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-09-04T06:38",
+      "weight": 130.3,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-09-01T06:15",
+      "weight": 128.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-31T07:35",
+      "weight": 129.9,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-29T13:25",
+      "weight": 130.2,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-27T05:06",
+      "weight": 130,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-26T06:35",
+      "weight": 130.3,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-25T04:35",
+      "weight": 130.3,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-24T04:04",
+      "weight": 130.4,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-23T05:15",
+      "weight": 131.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-22T05:50",
+      "weight": 131.8,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-21T06:13",
+      "weight": 132.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-20T06:03",
+      "weight": 132.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-19T04:25",
+      "weight": 133.1,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-12T06:02",
+      "weight": 132.6,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-11T04:43",
+      "weight": 132.7,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-10T07:44",
+      "weight": 131.9,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-08T17:06",
+      "weight": 134,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-07T06:02",
+      "weight": 133.9,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-06T07:15",
+      "weight": 133.6,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-05T04:44",
+      "weight": 133.4,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-04T05:56",
+      "weight": 133.2,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-03T07:40",
+      "weight": 133.8,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-08-02T11:08",
+      "weight": 133.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-31T06:20",
+      "weight": 133.9,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-30T04:36",
+      "weight": 134.6,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-29T04:17",
+      "weight": 135.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-28T05:35",
+      "weight": 134.9,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-27T06:05",
+      "weight": 135.7,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-26T05:50",
+      "weight": 135.2,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-23T06:20",
+      "weight": 136.2,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-22T19:15",
+      "weight": 136.5,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    },
+    {
+      "date": "2025-07-22T12:00",
+      "weight": 136.7,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": "acordei ok. Comendo uma tapioca com ovo. Ousado. Mais tarde comi uma mini fatia de pizza da Pina e 2 pães de queijo."
+    },
+    {
+      "date": "2025-07-22T06:17",
+      "weight": 136.6,
+      "bodyFatPercent": null,
+      "waterPercent": null,
+      "musclePercent": null,
+      "boneMass": null,
+      "notes": null
+    }
+  ],
+  "medicationEvents": [
+    {
+      "date": "2025-10-04T09:17",
+      "dose": "5mg",
+      "notes": "Weight at dose: 130"
+    },
+    {
+      "date": "2025-09-29T19:50",
+      "dose": "5mg",
+      "notes": null
+    },
+    {
+      "date": "2025-08-29T13:25",
+      "dose": "5mg",
+      "notes": "Weight at dose: 130.2"
+    },
+    {
+      "date": "2025-08-23T05:15",
+      "dose": "5mg",
+      "notes": "Weight at dose: 131.5"
+    },
+    {
+      "date": "2025-08-19T04:25",
+      "dose": "5mg",
+      "notes": "Weight at dose: 133.1"
+    },
+    {
+      "date": "2025-08-08T17:06",
+      "dose": "2.5mg",
+      "notes": "Weight at dose: 134"
+    },
+    {
+      "date": "2025-08-01T12:40",
+      "dose": "2.5mg",
+      "notes": "Weight at dose: 133.3"
+    },
+    {
+      "date": "2025-07-25T06:37",
+      "dose": "2.5mg",
+      "notes": "Weight at dose: 135.5"
+    },
+    {
+      "date": "2025-07-18T12:00",
+      "dose": "2.5mg",
+      "notes": "Weight at dose: 139.3"
+    },
+    {
+      "date": "2025-07-04T08:00",
+      "dose": "5mg",
+      "notes": "Weight at dose: 141.5"
+    }
+  ],
+  "exportDate": "2025-10-16T14:10:13.176Z",
+  "version": "1.2"
+}

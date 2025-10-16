@@ -5,7 +5,8 @@ const DATA_KEYS = {
     MEASUREMENTS: 'bodymetrics_measurements',
     SETTINGS: 'bodymetrics_settings',
     GOALS: 'bodymetrics_goals',
-    ACHIEVEMENTS: 'bodymetrics_achievements'
+    ACHIEVEMENTS: 'bodymetrics_achievements',
+    MEDICATION_EVENTS: 'bodymetrics_medication'
 };
 
 // Data Models
@@ -97,6 +98,34 @@ class MeasurementEntry {
     }
 }
 
+class MedicationEvent {
+    constructor(data = {}) {
+        this.id = data.id || this.generateId();
+        this.date = data.date || new Date().toISOString();
+        this.dose = data.dose || '';
+        this.notes = data.notes || '';
+        this.createdAt = data.createdAt || new Date().toISOString();
+    }
+
+    generateId() {
+        return `medication_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    validate() {
+        const errors = [];
+
+        if (!this.date || isNaN(new Date(this.date).getTime())) {
+            errors.push('Valid medication date is required');
+        }
+
+        if (!this.dose || typeof this.dose !== 'string' || this.dose.trim().length === 0) {
+            errors.push('Medication dose is required');
+        }
+
+        return errors;
+    }
+}
+
 class AppSettings {
     constructor(data = {}) {
         this.theme = data.theme || 'light';
@@ -109,6 +138,9 @@ class AppSettings {
             dayOfWeek: 1, // 0 = Sunday, 1 = Monday, etc.
             lastReminder: null,
             permission: 'default' // default, granted, denied
+        };
+        this.features = data.features || {
+            medicationTracking: false
         };
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -126,6 +158,10 @@ class AppSettings {
         
         if (![30, 90, 365].includes(this.chartPeriod)) {
             errors.push('Invalid chart period selection');
+        }
+
+        if (!this.features || typeof this.features.medicationTracking !== 'boolean') {
+            errors.push('Invalid feature configuration');
         }
         
         return errors;
@@ -463,6 +499,7 @@ class DataManager {
         this.settings = null;
         this.goals = [];
         this.achievements = [];
+        this.medicationEvents = [];
         this.loadAllData();
     }
 
@@ -517,6 +554,22 @@ class DataManager {
         return this.measurements;
     }
 
+    loadMedicationEvents() {
+        try {
+            const data = localStorage.getItem(DATA_KEYS.MEDICATION_EVENTS);
+            if (data) {
+                const events = JSON.parse(data);
+                this.medicationEvents = events.map(event => new MedicationEvent(event));
+            } else {
+                this.medicationEvents = [];
+            }
+        } catch (error) {
+            console.error('Error loading medication events:', error);
+            this.medicationEvents = [];
+        }
+        return this.medicationEvents;
+    }
+
     saveMeasurement(measurementData) {
         try {
             const measurement = new MeasurementEntry(measurementData);
@@ -568,6 +621,59 @@ class DataManager {
             console.error('Error deleting measurement:', error);
             return { success: false, error: error.message };
         }
+    }
+
+    saveMedicationEvent(eventData) {
+        try {
+            const event = new MedicationEvent(eventData);
+            const errors = event.validate();
+
+            if (errors.length > 0) {
+                throw new Error(errors.join(', '));
+            }
+
+            const duplicate = this.medicationEvents.find(existing => {
+                return new Date(existing.date).getTime() === new Date(event.date).getTime();
+            });
+
+            if (duplicate) {
+                throw new Error('A medication event already exists for this time');
+            }
+
+            this.medicationEvents.push(event);
+            this.medicationEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            localStorage.setItem(DATA_KEYS.MEDICATION_EVENTS, JSON.stringify(this.medicationEvents));
+
+            return { success: true, event };
+        } catch (error) {
+            console.error('Error saving medication event:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    deleteMedicationEvent(eventId) {
+        try {
+            const index = this.medicationEvents.findIndex(event => event.id === eventId);
+            if (index === -1) {
+                throw new Error('Medication event not found');
+            }
+
+            this.medicationEvents.splice(index, 1);
+            localStorage.setItem(DATA_KEYS.MEDICATION_EVENTS, JSON.stringify(this.medicationEvents));
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting medication event:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    getMedicationEvents(limit = null) {
+        if (typeof limit === 'number' && limit > 0) {
+            return this.medicationEvents.slice(0, limit);
+        }
+        return [...this.medicationEvents];
     }
 
     // Settings Management
@@ -1056,8 +1162,9 @@ class DataManager {
                 settings: this.settings,
                 goals: this.goals,
                 achievements: this.achievements,
+                medicationEvents: this.medicationEvents,
                 exportDate: new Date().toISOString(),
-                version: '1.1'
+                version: '1.2'
             };
             
             const dataStr = JSON.stringify(exportData, null, 2);
@@ -1093,7 +1200,8 @@ class DataManager {
                 measurements: this.measurements,
                 settings: this.settings,
                 goals: this.goals,
-                achievements: this.achievements
+                achievements: this.achievements,
+                medicationEvents: this.medicationEvents
             };
             
             // Import profile
@@ -1138,6 +1246,29 @@ class DataManager {
                         }
                     }
                 }
+
+                // Import medication events
+                if (importData.medicationEvents && Array.isArray(importData.medicationEvents)) {
+                    this.medicationEvents = [];
+                    let importedMedCount = 0;
+
+                    for (const eventData of importData.medicationEvents) {
+                        const event = new MedicationEvent(eventData);
+                        const errors = event.validate();
+
+                        if (errors.length === 0) {
+                            this.medicationEvents.push(event);
+                            importedMedCount++;
+                        } else {
+                            console.warn(`Skipped medication event: ${errors.join(', ')}`);
+                        }
+                    }
+
+                    this.medicationEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    localStorage.setItem(DATA_KEYS.MEDICATION_EVENTS, JSON.stringify(this.medicationEvents));
+
+                    console.log(`Imported ${importedMedCount} medication events`);
+                }
                 
                 // Import achievements
                 if (importData.achievements && Array.isArray(importData.achievements)) {
@@ -1169,11 +1300,13 @@ class DataManager {
             localStorage.removeItem(DATA_KEYS.MEASUREMENTS);
             localStorage.removeItem(DATA_KEYS.SETTINGS);
             localStorage.removeItem(DATA_KEYS.GOALS);
+            localStorage.removeItem(DATA_KEYS.MEDICATION_EVENTS);
             
             this.profile = new UserProfile();
             this.measurements = [];
             this.settings = new AppSettings();
             this.goals = [];
+            this.medicationEvents = [];
             
             return { success: true };
         } catch (error) {
@@ -1188,6 +1321,7 @@ class DataManager {
         this.loadMeasurements();
         this.loadSettings();
         this.loadGoals();
+        this.loadMedicationEvents();
     }
 
     // Storage quota management

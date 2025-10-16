@@ -7,6 +7,7 @@ A lightweight, mobile-first body composition tracking application built with van
 - 📊 **Dashboard** - Quick overview of current stats and recent measurements
 - ➕ **Measurement Entry** - Easy form to add new body composition data
 - 📈 **Trend Charts** - Visualize your progress over time (30/90/365 days)
+- 💊 **Medication Tracking** *(optional)* - Toggle in Profile to log doses alongside measurements
 - 👤 **Profile Management** - Store personal information and preferences
 - 💾 **Data Management** - Export/import data with full privacy control
 - 📱 **Mobile-First** - Optimized for mobile devices with touch-friendly interface
@@ -48,9 +49,16 @@ A lightweight, mobile-first body composition tracking application built with van
 2. **Charts** tab displays trend graphs for different time periods
 3. Use the period selector to view 30, 90, or 365-day trends
 
+### Tracking Medication (Optional)
+
+1. Open the **Profile** tab and enable **"I want to track medication doses"**
+2. A **Medication** tab appears in the bottom navigation
+3. Use the form to log dose, date/time, and optional notes
+4. Review, export, or delete entries from the history list
+
 ### Data Management
 
-- **Export**: Download your data as a JSON file for backup
+- **Export**: Download your data as a JSON file for backup (includes medication events when enabled)
 - **Import**: Restore data from a previously exported file
 - **Clear**: Remove all data (with confirmation prompt)
 

@@ -52,6 +52,25 @@
   .profile-section {
     padding: var(--spacing-md);
   }
+
+  .medication-content {
+    gap: var(--spacing-lg);
+  }
+
+  .card-block {
+    padding: var(--spacing-lg);
+  }
+
+  .medication-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .medication-history-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
   
   /* Modal adjustments */
   .modal-content {

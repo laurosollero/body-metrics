@@ -40,6 +40,42 @@ class Utils {
         return d.toLocaleDateString('en-US', options[format] || options.short);
     }
 
+    static formatDateTime(date, format = 'short') {
+        const d = new Date(date);
+
+        if (isNaN(d.getTime())) {
+            return 'Invalid Date';
+        }
+
+        const options = {
+            short: {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            },
+            long: {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            },
+            time: {
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        };
+
+        if (format === 'iso') {
+            return d.toISOString();
+        }
+
+        return d.toLocaleString('en-US', options[format] || options.short);
+    }
+
     static getRelativeTime(date) {
         const now = new Date();
         const diff = now - new Date(date);
@@ -63,8 +99,20 @@ class Utils {
         if (minutes > 0) {
             return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
         }
-        
+
         return 'Just now';
+    }
+
+    static daysBetween(date1, date2, absolute = true) {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+
+        if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+            return 0;
+        }
+
+        const diff = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
+        return absolute ? Math.floor(Math.abs(diff)) : Math.floor(diff);
     }
 
     static getCurrentDateTime() {
@@ -386,6 +434,16 @@ class Utils {
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    static sanitizeHtml(str) {
+        if (str === null || str === undefined) {
+            return '';
+        }
+
+        const temp = document.createElement('div');
+        temp.textContent = String(str);
+        return temp.innerHTML;
     }
 
     // Chart data helpers
