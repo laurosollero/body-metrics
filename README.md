@@ -56,6 +56,12 @@ A lightweight, mobile-first body composition tracking application built with van
 3. Use the form to log dose, date/time, and optional notes
 4. Review, export, or delete entries from the history list
 
+### Customising Scale Metrics
+
+1. In **Profile → Scale Measurement Options**, uncheck any metrics your scale does not record
+2. Hidden metrics disappear from the entry form, dashboard stats, charts, and progress cards
+3. Re-enable the toggles at any time if you start recording additional data
+
 ### Data Management
 
 - **Export**: Download your data as a JSON file for backup (includes medication events when enabled)

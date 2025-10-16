@@ -349,31 +349,59 @@ class ChartManager {
 
         try {
             const measurements = dataManager.getMeasurementsInPeriod(period);
-            
+            const metrics = dataManager.settings?.features?.metrics || { bodyFat: true, muscle: true, water: true };
+
+            const compositionSection = document.getElementById('compositionChart')?.closest('.chart-section');
+            const bodyFatEnabled = !!metrics.bodyFat;
+            const muscleEnabled = !!metrics.muscle;
+            const waterEnabled = !!metrics.water;
+
             const bodyFatData = Utils.prepareChartData(measurements, 'bodyFatPercent', period);
             const muscleData = Utils.prepareChartData(measurements, 'musclePercent', period);
             const waterData = Utils.prepareChartData(measurements, 'waterPercent', period);
-            
-            // Use the labels from the first dataset that has data
-            let labels = bodyFatData.labels;
-            if (labels.length === 0) labels = muscleData.labels;
-            if (labels.length === 0) labels = waterData.labels;
-            
-            if (labels.length === 0) {
-                // Show no data message
+
+            const datasetConfigs = [
+                { index: 0, enabled: bodyFatEnabled, data: bodyFatData },
+                { index: 1, enabled: muscleEnabled, data: muscleData },
+                { index: 2, enabled: waterEnabled, data: waterData }
+            ];
+
+            const anyMetricEnabled = datasetConfigs.some(cfg => cfg.enabled);
+
+            if (!anyMetricEnabled) {
+                if (compositionSection) compositionSection.classList.add('hidden');
                 this.charts.composition.data.labels = ['No data'];
-                this.charts.composition.data.datasets[0].data = [null];
-                this.charts.composition.data.datasets[1].data = [null];
-                this.charts.composition.data.datasets[2].data = [null];
+                datasetConfigs.forEach(cfg => {
+                    const dataset = this.charts.composition.data.datasets[cfg.index];
+                    dataset.data = [null];
+                    dataset.hidden = true;
+                });
+                this.charts.composition.update('none');
+                return;
+            }
+
+            if (compositionSection) compositionSection.classList.remove('hidden');
+
+            const firstDatasetWithData = datasetConfigs.find(cfg => cfg.enabled && cfg.data.labels.length > 0);
+            let labels = firstDatasetWithData ? firstDatasetWithData.data.labels : [];
+
+            if (labels.length === 0) {
+                // No entries for selected metrics
+                this.charts.composition.data.labels = ['No data'];
+                datasetConfigs.forEach(cfg => {
+                    const dataset = this.charts.composition.data.datasets[cfg.index];
+                    dataset.data = [null];
+                    dataset.hidden = !cfg.enabled;
+                });
             } else {
                 this.charts.composition.data.labels = labels;
-                
-                // Update each dataset
-                this.charts.composition.data.datasets[0].data = bodyFatData.data;
-                this.charts.composition.data.datasets[1].data = muscleData.data;
-                this.charts.composition.data.datasets[2].data = waterData.data;
+                datasetConfigs.forEach(cfg => {
+                    const dataset = this.charts.composition.data.datasets[cfg.index];
+                    dataset.hidden = !cfg.enabled;
+                    dataset.data = cfg.enabled ? cfg.data.data : [];
+                });
             }
-            
+
             this.charts.composition.update('none');
         } catch (error) {
             console.error('Error updating composition chart:', error);

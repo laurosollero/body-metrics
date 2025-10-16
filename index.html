@@ -108,17 +108,17 @@
                         <div class="stat-value" id="currentWeight">--</div>
                         <div class="stat-unit">kg</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card metric-card" data-metric="bodyFat">
                         <div class="stat-label">Body Fat</div>
                         <div class="stat-value" id="currentBodyFat">--</div>
                         <div class="stat-unit">%</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card metric-card" data-metric="muscle">
                         <div class="stat-label">Muscle Mass</div>
                         <div class="stat-value" id="currentMuscle">--</div>
                         <div class="stat-unit">%</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card metric-card" data-metric="water">
                         <div class="stat-label">Water %</div>
                         <div class="stat-value" id="currentWater">--</div>
                         <div class="stat-unit">%</div>
@@ -154,22 +154,22 @@
                         <input type="number" id="weight" name="weight" step="0.1" min="0" max="300" required>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group metric-field" data-metric="bodyFat">
                         <label for="bodyFat">Body Fat (%)</label>
                         <input type="number" id="bodyFat" name="bodyFat" step="0.1" min="0" max="100">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group metric-field" data-metric="water">
                         <label for="water">Water (%)</label>
                         <input type="number" id="water" name="water" step="0.1" min="0" max="100">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group metric-field" data-metric="muscle">
                         <label for="muscle">Muscle (%)</label>
                         <input type="number" id="muscle" name="muscle" step="0.1" min="0" max="100">
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group metric-field" data-metric="bone">
                         <label for="boneMass">Bone Mass (kg)</label>
                         <input type="number" id="boneMass" name="boneMass" step="0.1" min="0" max="10">
                     </div>
@@ -224,7 +224,7 @@
                     <div class="chart-section">
                         <h3>Progress Summary</h3>
                         <div class="progress-summary-grid">
-                            <div class="progress-card" id="weightProgress">
+                            <div class="progress-card" id="weightProgress" data-metric-progress="weight">
                                 <div class="progress-card-header">
                                     <span class="progress-icon" data-icon="weight" data-size="24"></span>
                                     <span class="progress-title">Weight</span>
@@ -235,7 +235,7 @@
                                 </div>
                             </div>
                             
-                            <div class="progress-card" id="bodyFatProgress">
+                            <div class="progress-card" id="bodyFatProgress" data-metric-progress="bodyFat">
                                 <div class="progress-card-header">
                                     <span class="progress-icon" data-icon="bodyfat" data-size="24"></span>
                                     <span class="progress-title">Body Fat</span>
@@ -246,7 +246,7 @@
                                 </div>
                             </div>
                             
-                            <div class="progress-card" id="muscleProgress">
+                            <div class="progress-card" id="muscleProgress" data-metric-progress="muscle">
                                 <div class="progress-card-header">
                                     <span class="progress-icon" data-icon="muscle" data-size="24"></span>
                                     <span class="progress-title">Muscle</span>
@@ -257,7 +257,7 @@
                                 </div>
                             </div>
                             
-                            <div class="progress-card" id="waterProgress">
+                            <div class="progress-card" id="waterProgress" data-metric-progress="water">
                                 <div class="progress-card-header">
                                     <span class="progress-icon" data-icon="water" data-size="24"></span>
                                     <span class="progress-title">Water</span>
@@ -422,6 +422,31 @@
                             <span class="checkbox-text">I want to track medication doses</span>
                         </label>
                         <p class="form-help" id="medicationTrackingStatus">Medication tracking is disabled.</p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Scale Measurement Options</h3>
+                        <p class="form-help">
+                            Toggle the metrics your scale records. Disabled metrics are hidden from forms, tables, and charts.
+                        </p>
+                        <div class="metric-toggle-grid">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="metricBodyFatToggle">
+                                <span class="checkbox-text">Track body fat percentage</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="metricMuscleToggle">
+                                <span class="checkbox-text">Track muscle mass percentage</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="metricWaterToggle">
+                                <span class="checkbox-text">Track water percentage</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="metricBoneToggle">
+                                <span class="checkbox-text">Track bone mass</span>
+                            </label>
+                        </div>
                     </div>
                     
                     <div class="profile-section">

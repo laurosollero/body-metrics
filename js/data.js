@@ -139,8 +139,30 @@ class AppSettings {
             lastReminder: null,
             permission: 'default' // default, granted, denied
         };
-        this.features = data.features || {
-            medicationTracking: false
+        const defaultMetrics = {
+            bodyFat: true,
+            muscle: true,
+            water: true,
+            bone: false
+        };
+
+        this.features = {
+            medicationTracking: false,
+            metrics: { ...defaultMetrics },
+            ...(data.features || {})
+        };
+
+        if (typeof this.features.medicationTracking !== 'boolean') {
+            this.features.medicationTracking = false;
+        }
+
+        const incomingMetrics = data.features && data.features.metrics
+            ? data.features.metrics
+            : {};
+
+        this.features.metrics = {
+            ...defaultMetrics,
+            ...incomingMetrics
         };
         this.updatedAt = data.updatedAt || new Date().toISOString();
     }
@@ -162,6 +184,17 @@ class AppSettings {
 
         if (!this.features || typeof this.features.medicationTracking !== 'boolean') {
             errors.push('Invalid feature configuration');
+        }
+
+        const metricKeys = ['bodyFat', 'muscle', 'water', 'bone'];
+        if (!this.features.metrics) {
+            errors.push('Metric visibility configuration missing');
+        } else {
+            metricKeys.forEach((metric) => {
+                if (typeof this.features.metrics[metric] !== 'boolean') {
+                    errors.push(`Invalid configuration for metric: ${metric}`);
+                }
+            });
         }
         
         return errors;

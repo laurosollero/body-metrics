@@ -134,6 +134,22 @@ class BodyMetricsApp {
             });
         }
 
+        const metricToggleConfig = [
+            { id: 'metricBodyFatToggle', key: 'bodyFat' },
+            { id: 'metricMuscleToggle', key: 'muscle' },
+            { id: 'metricWaterToggle', key: 'water' },
+            { id: 'metricBoneToggle', key: 'bone' }
+        ];
+
+        metricToggleConfig.forEach(({ id, key }) => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    this.handleMetricToggle(key, e.target.checked);
+                });
+            }
+        });
+
         // Medication form
         const medicationForm = document.getElementById('medicationForm');
         if (medicationForm) {
@@ -855,6 +871,8 @@ class BodyMetricsApp {
         this.updateCharts();
         this.updateProfile();
         this.updateGoals();
+        this.updateMetricToggleUI();
+        this.updateMetricVisibilityUI();
         this.updateMedicationTrackingUI();
         this.updateMedicationView();
         this.loadNotificationSettings();
@@ -863,16 +881,35 @@ class BodyMetricsApp {
     updateDashboard() {
         // Update current stats
         const stats = dataManager.getCurrentStats();
-        
+        const metrics = this.getMetricFlags();
+
         const weightEl = document.getElementById('currentWeight');
         const bodyFatEl = document.getElementById('currentBodyFat');
         const muscleEl = document.getElementById('currentMuscle');
         const waterEl = document.getElementById('currentWater');
-        
+
         if (weightEl) weightEl.textContent = stats.weight;
-        if (bodyFatEl) bodyFatEl.textContent = stats.bodyFat;
-        if (muscleEl) muscleEl.textContent = stats.muscle;
-        if (waterEl) waterEl.textContent = stats.water;
+
+        if (bodyFatEl) {
+            const card = bodyFatEl.closest('.stat-card');
+            const enabled = !!metrics.bodyFat;
+            if (card) card.classList.toggle('hidden', !enabled);
+            bodyFatEl.textContent = enabled ? stats.bodyFat : '--';
+        }
+
+        if (muscleEl) {
+            const card = muscleEl.closest('.stat-card');
+            const enabled = !!metrics.muscle;
+            if (card) card.classList.toggle('hidden', !enabled);
+            muscleEl.textContent = enabled ? stats.muscle : '--';
+        }
+
+        if (waterEl) {
+            const card = waterEl.closest('.stat-card');
+            const enabled = !!metrics.water;
+            if (card) card.classList.toggle('hidden', !enabled);
+            waterEl.textContent = enabled ? stats.water : '--';
+        }
 
         // Update welcome message
         this.updateWelcomeMessage();
@@ -911,11 +948,65 @@ class BodyMetricsApp {
         table.style.width = '100%';
         table.style.borderCollapse = 'collapse';
         
+        const metrics = this.getMetricFlags();
+        const columns = [
+            {
+                key: 'date',
+                label: 'Date',
+                render: (measurement) => Utils.formatDate(measurement.date, 'short')
+            },
+            {
+                key: 'weight',
+                label: 'Weight',
+                render: (measurement) => measurement.weight ? `${Utils.formatNumber(measurement.weight)} kg` : '--'
+            }
+        ];
+
+        if (metrics.bodyFat) {
+            columns.push({
+                key: 'bodyFatPercent',
+                label: 'Body Fat',
+                render: (measurement) => measurement.bodyFatPercent !== null && measurement.bodyFatPercent !== undefined
+                    ? `${Utils.formatNumber(measurement.bodyFatPercent)}%`
+                    : '--'
+            });
+        }
+
+        if (metrics.muscle) {
+            columns.push({
+                key: 'musclePercent',
+                label: 'Muscle',
+                render: (measurement) => measurement.musclePercent !== null && measurement.musclePercent !== undefined
+                    ? `${Utils.formatNumber(measurement.musclePercent)}%`
+                    : '--'
+            });
+        }
+
+        if (metrics.water) {
+            columns.push({
+                key: 'waterPercent',
+                label: 'Water',
+                render: (measurement) => measurement.waterPercent !== null && measurement.waterPercent !== undefined
+                    ? `${Utils.formatNumber(measurement.waterPercent)}%`
+                    : '--'
+            });
+        }
+
+        if (metrics.bone) {
+            columns.push({
+                key: 'boneMass',
+                label: 'Bone Mass',
+                render: (measurement) => measurement.boneMass !== null && measurement.boneMass !== undefined
+                    ? `${Utils.formatNumber(measurement.boneMass)} kg`
+                    : '--'
+            });
+        }
+
         // Header
         const headerRow = table.createTHead().insertRow();
-        ['Date', 'Weight', 'Body Fat', 'Muscle'].forEach(text => {
+        columns.forEach(({ label }) => {
             const th = document.createElement('th');
-            th.textContent = text;
+            th.textContent = label;
             th.style.padding = 'var(--spacing-sm)';
             th.style.textAlign = 'left';
             th.style.borderBottom = '1px solid var(--border-color)';
@@ -928,30 +1019,12 @@ class BodyMetricsApp {
         const tbody = table.createTBody();
         measurements.forEach(measurement => {
             const row = tbody.insertRow();
-            
-            // Date
-            const dateCell = row.insertCell();
-            dateCell.textContent = Utils.formatDate(measurement.date, 'short');
-            dateCell.style.padding = 'var(--spacing-sm)';
-            dateCell.style.fontSize = 'var(--font-size-sm)';
-            
-            // Weight
-            const weightCell = row.insertCell();
-            weightCell.textContent = measurement.weight ? `${Utils.formatNumber(measurement.weight)} kg` : '--';
-            weightCell.style.padding = 'var(--spacing-sm)';
-            weightCell.style.fontSize = 'var(--font-size-sm)';
-            
-            // Body Fat
-            const bodyFatCell = row.insertCell();
-            bodyFatCell.textContent = measurement.bodyFatPercent ? `${Utils.formatNumber(measurement.bodyFatPercent)}%` : '--';
-            bodyFatCell.style.padding = 'var(--spacing-sm)';
-            bodyFatCell.style.fontSize = 'var(--font-size-sm)';
-            
-            // Muscle
-            const muscleCell = row.insertCell();
-            muscleCell.textContent = measurement.musclePercent ? `${Utils.formatNumber(measurement.musclePercent)}%` : '--';
-            muscleCell.style.padding = 'var(--spacing-sm)';
-            muscleCell.style.fontSize = 'var(--font-size-sm)';
+            columns.forEach(({ render }) => {
+                const cell = row.insertCell();
+                cell.textContent = render(measurement);
+                cell.style.padding = 'var(--spacing-sm)';
+                cell.style.fontSize = 'var(--font-size-sm)';
+            });
         });
 
         container.innerHTML = '';
@@ -975,6 +1048,8 @@ class BodyMetricsApp {
             gender: dataManager.profile.gender,
             activityLevel: dataManager.profile.activityLevel
         });
+
+        this.updateMetricToggleUI();
     }
 
     updateGoals() {
@@ -1193,6 +1268,78 @@ class BodyMetricsApp {
         }
     }
 
+    handleMetricToggle(metricKey, isEnabled) {
+        try {
+            if (!dataManager.settings.features) {
+                dataManager.settings.features = {
+                    medicationTracking: false,
+                    metrics: {
+                        bodyFat: true,
+                        muscle: true,
+                        water: true,
+                        bone: false
+                    }
+                };
+            }
+
+            if (!dataManager.settings.features.metrics) {
+                dataManager.settings.features.metrics = {
+                    bodyFat: true,
+                    muscle: true,
+                    water: true,
+                    bone: false
+                };
+            }
+
+            dataManager.settings.features.metrics[metricKey] = isEnabled;
+
+            const result = dataManager.saveSettings(dataManager.settings);
+            if (!result.success) {
+                Utils.showToast(result.error || 'Could not update metric setting', 'error');
+                this.updateMetricToggleUI();
+                return;
+            }
+
+            Utils.showToast(
+                isEnabled
+                    ? `Enabled tracking for ${this.getMetricLabel(metricKey)}`
+                    : `Disabled tracking for ${this.getMetricLabel(metricKey)}`,
+                'success'
+            );
+
+            this.updateMetricToggleUI();
+            this.updateMetricVisibilityUI();
+            this.updateUI();
+        } catch (error) {
+            Utils.handleError(error, `Updating ${metricKey} tracking`);
+        }
+    }
+
+    getMetricLabel(metricKey) {
+        const labels = {
+            bodyFat: 'body fat',
+            muscle: 'muscle mass',
+            water: 'water percentage',
+            bone: 'bone mass'
+        };
+        return labels[metricKey] || metricKey;
+    }
+
+    getMetricFlags() {
+        const defaultMetrics = {
+            bodyFat: true,
+            muscle: true,
+            water: true,
+            bone: false
+        };
+
+        const settingsMetrics = dataManager.settings?.features?.metrics || {};
+        return {
+            ...defaultMetrics,
+            ...settingsMetrics
+        };
+    }
+
     updateMedicationTrackingUI() {
         const navItem = document.getElementById('medicationNavItem');
         const toggle = document.getElementById('medicationTrackingToggle');
@@ -1218,6 +1365,47 @@ class BodyMetricsApp {
                 ? 'Medication tracking is enabled.'
                 : 'Medication tracking is disabled.';
         }
+    }
+
+    updateMetricToggleUI() {
+        const metrics = this.getMetricFlags();
+
+        const toggleMap = [
+            { id: 'metricBodyFatToggle', key: 'bodyFat' },
+            { id: 'metricMuscleToggle', key: 'muscle' },
+            { id: 'metricWaterToggle', key: 'water' },
+            { id: 'metricBoneToggle', key: 'bone' }
+        ];
+
+        toggleMap.forEach(({ id, key }) => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.checked = !!metrics[key];
+            }
+        });
+    }
+
+    updateMetricVisibilityUI() {
+        const metrics = this.getMetricFlags();
+
+        // Toggle measurement form inputs
+        document.querySelectorAll('.metric-field').forEach((field) => {
+            const key = field.getAttribute('data-metric');
+            field.classList.toggle('hidden', !metrics[key]);
+        });
+
+        // Toggle stat cards
+        document.querySelectorAll('.metric-card').forEach((card) => {
+            const key = card.getAttribute('data-metric');
+            card.classList.toggle('hidden', !metrics[key]);
+        });
+
+        // Toggle progress summary cards (weight always visible)
+        document.querySelectorAll('[data-metric-progress]').forEach((card) => {
+            const key = card.getAttribute('data-metric-progress');
+            if (key === 'weight') return;
+            card.classList.toggle('hidden', !metrics[key]);
+        });
     }
 
     updateMedicationView() {

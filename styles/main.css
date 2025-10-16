@@ -310,6 +310,13 @@ body {
   margin-top: var(--spacing-xl);
 }
 
+.metric-toggle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
 /* Medication Tracking */
 .medication-content {
   display: flex;
