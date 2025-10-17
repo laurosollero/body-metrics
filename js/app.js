@@ -113,10 +113,14 @@ class BodyMetricsApp {
         const exportBtn = document.getElementById('exportData');
         const importFile = document.getElementById('importFile');
         const clearBtn = document.getElementById('clearData');
+        const refreshAssetsBtn = document.getElementById('refreshAssetsBtn');
 
         if (exportBtn) exportBtn.addEventListener('click', this.handleDataActions);
         if (importFile) importFile.addEventListener('change', this.handleDataActions);
         if (clearBtn) clearBtn.addEventListener('click', this.handleDataActions);
+        if (refreshAssetsBtn) {
+            refreshAssetsBtn.addEventListener('click', () => this.refreshAppAssets());
+        }
 
         // Chart period selector
         const chartPeriod = document.getElementById('chartPeriod');
@@ -711,6 +715,11 @@ class BodyMetricsApp {
         try {
             const form = document.getElementById('quickGoalForm');
             const formData = Utils.getFormData(form);
+
+            if (!formData.type) {
+                Utils.showToast('Select a goal type first', 'error');
+                return;
+            }
             
             // Validate target value
             const targetValueInput = form.querySelector('[name="targetValue"]');
@@ -782,6 +791,72 @@ class BodyMetricsApp {
             }
         } catch (error) {
             Utils.handleError(error, 'exporting data');
+        }
+    }
+
+    async refreshAppAssets() {
+        if (!('serviceWorker' in navigator)) {
+            Utils.showToast('Service worker not supported in this browser.', 'warning');
+            return;
+        }
+
+        Utils.showToast('Refreshing cached files…', 'warning');
+
+        try {
+            if ('caches' in window && typeof caches.keys === 'function') {
+                const keys = await caches.keys();
+                await Promise.all(
+                    keys
+                        .filter((key) => key.includes('bodymetrics') || key.includes('mounjaro'))
+                        .map((key) => caches.delete(key))
+                );
+            }
+
+            let controllerChanged = false;
+            const controllerPromise = new Promise((resolve) => {
+                if (!navigator.serviceWorker) {
+                    resolve();
+                    return;
+                }
+
+                const listener = () => {
+                    controllerChanged = true;
+                    navigator.serviceWorker.removeEventListener('controllerchange', listener);
+                    resolve();
+                    setTimeout(() => window.location.reload(), 300);
+                };
+
+                navigator.serviceWorker.addEventListener('controllerchange', listener);
+
+                setTimeout(() => {
+                    navigator.serviceWorker.removeEventListener('controllerchange', listener);
+                    resolve();
+                }, 2000);
+            });
+
+            const registration = await navigator.serviceWorker.getRegistration();
+
+            if (registration) {
+                await registration.update();
+                if (registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            }
+
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+            }
+
+            await controllerPromise;
+
+            Utils.showToast('Cached files refreshed. Reloading…', 'success');
+
+            if (!controllerChanged) {
+                setTimeout(() => window.location.reload(), 500);
+            }
+        } catch (error) {
+            console.error('Error refreshing cached assets:', error);
+            Utils.showToast(`Failed to refresh cached files: ${error.message}`, 'error');
         }
     }
 
@@ -1096,7 +1171,7 @@ class BodyMetricsApp {
                     <button class="goal-action-btn" onclick="bodyMetricsApp.editGoal('${goal.id}')" title="Edit goal">
                         ✏️
                     </button>
-                    <button class="goal-action-btn" onclick="bodyMetricsApp.deleteGoal('${goal.id}')" title="Delete goal">
+                    <button class="goal-action-btn" onclick="bodyMetricsApp.cancelGoal('${goal.id}')" title="Cancel goal">
                         🗑️
                     </button>
                 </div>
@@ -1215,14 +1290,14 @@ class BodyMetricsApp {
         Utils.showToast('Goal editing coming soon!', 'warning');
     }
 
-    deleteGoal(goalId) {
+    cancelGoal(goalId) {
         this.showModal(
-            'Delete Goal',
-            'Are you sure you want to delete this goal? This action cannot be undone.',
+            'Cancel Goal',
+            'Are you sure you want to cancel this goal?',
             () => {
-                const result = dataManager.deleteGoal(goalId);
+                const result = dataManager.cancelGoal(goalId);
                 if (result.success) {
-                    Utils.showToast('Goal deleted successfully', 'success');
+                    Utils.showToast('Goal cancelled', 'success');
                     this.updateGoals();
                     this.updateDashboard();
                 } else {

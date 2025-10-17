@@ -533,8 +533,9 @@ class Utils {
     }
 
     static validateDate(dateString) {
+        if (!dateString) return false;
         const date = new Date(dateString);
-        return !isNaN(date.getTime()) && date <= new Date();
+        return !isNaN(date.getTime());
     }
 
     // Device detection

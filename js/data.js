@@ -243,8 +243,13 @@ class Goal {
             errors.push('Invalid target date');
         }
         
-        if (this.targetDate && new Date(this.targetDate) <= new Date()) {
-            errors.push('Target date must be in the future');
+        if (this.targetDate) {
+            const targetEndOfDay = new Date(`${this.targetDate}T23:59:59`);
+            if (isNaN(targetEndOfDay.getTime())) {
+                errors.push('Invalid target date');
+            } else if (targetEndOfDay <= new Date()) {
+                errors.push('Target date must be in the future');
+            }
         }
         
         return errors;
@@ -257,13 +262,25 @@ class Goal {
     }
 
     calculateProgress() {
-        if (!this.startValue || !this.currentValue || !this.targetValue) {
-            return { percentage: 0, isOnTrack: false, daysRemaining: null };
+        const hasStart = this.startValue !== null && this.startValue !== undefined;
+        const hasCurrent = this.currentValue !== null && this.currentValue !== undefined;
+        const hasTarget = this.targetValue !== null && this.targetValue !== undefined;
+
+        if (!hasStart || !hasCurrent || !hasTarget) {
+            return { percentage: 0, isOnTrack: false, daysRemaining: null, isCompleted: false, remainingValue: null };
         }
 
-        const totalChange = this.targetValue - this.startValue;
-        const currentChange = this.currentValue - this.startValue;
-        const percentage = Math.abs(totalChange) > 0 ? (currentChange / totalChange) * 100 : 0;
+        const reductionMetrics = ['weight', 'bodyFat'];
+        const increaseMetrics = ['muscle', 'water'];
+        const isReductionGoal = reductionMetrics.includes(this.type);
+        const isIncreaseGoal = increaseMetrics.includes(this.type);
+
+        const totalChange = Math.abs(this.startValue - this.targetValue);
+        const achievedChange = isReductionGoal
+            ? Math.max(this.startValue - this.currentValue, 0)
+            : Math.max(this.currentValue - this.startValue, 0);
+
+        const percentage = totalChange > 0 ? Math.min(100, (achievedChange / totalChange) * 100) : 0;
 
         let daysRemaining = null;
         let isOnTrack = false;
@@ -278,19 +295,29 @@ class Goal {
             if (daysRemaining > 0) {
                 const totalDays = Math.ceil((target - start) / (1000 * 60 * 60 * 24));
                 const daysPassed = totalDays - daysRemaining;
-                const expectedProgress = daysPassed > 0 ? (daysPassed / totalDays) * 100 : 0;
+                const expectedProgress = totalDays > 0 ? (daysPassed / totalDays) * 100 : 0;
                 
-                // Consider on track if within 10% of expected progress
                 isOnTrack = Math.abs(percentage - expectedProgress) <= 10;
             }
         }
+
+        const diffToTarget = this.currentValue - this.targetValue;
+        const remainingValue = isReductionGoal
+            ? Math.max(diffToTarget, 0)
+            : Math.max(-diffToTarget, 0);
+
+        const isCompleted = isReductionGoal
+            ? this.currentValue <= this.targetValue
+            : isIncreaseGoal
+                ? this.currentValue >= this.targetValue
+                : percentage >= 100;
 
         return {
             percentage: Math.max(0, Math.min(100, percentage)),
             isOnTrack,
             daysRemaining,
-            isCompleted: percentage >= 100,
-            remainingValue: this.targetValue - this.currentValue
+            isCompleted,
+            remainingValue
         };
     }
 
@@ -776,18 +803,26 @@ class DataManager {
                     switch (goal.type) {
                         case 'weight':
                             goal.startValue = latest.weight;
+                            goal.currentValue = latest.weight;
                             break;
                         case 'bodyFat':
                             goal.startValue = latest.bodyFatPercent;
+                            goal.currentValue = latest.bodyFatPercent;
                             break;
                         case 'muscle':
                             goal.startValue = latest.musclePercent;
+                            goal.currentValue = latest.musclePercent;
                             break;
                         case 'water':
                             goal.startValue = latest.waterPercent;
+                            goal.currentValue = latest.waterPercent;
                             break;
                     }
                 }
+            }
+
+            if ((goal.currentValue === null || goal.currentValue === undefined) && goal.startValue !== null && goal.startValue !== undefined) {
+                goal.currentValue = goal.startValue;
             }
 
             // Check for existing active goal of same type
@@ -843,6 +878,23 @@ class DataManager {
             return { success: true };
         } catch (error) {
             console.error('Error deleting goal:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    cancelGoal(goalId) {
+        try {
+            const goal = this.goals.find(g => g.id === goalId);
+            if (!goal) {
+                throw new Error('Goal not found');
+            }
+
+            goal.status = 'cancelled';
+            goal.updatedAt = new Date().toISOString();
+            localStorage.setItem(DATA_KEYS.GOALS, JSON.stringify(this.goals));
+            return { success: true, goal };
+        } catch (error) {
+            console.error('Error cancelling goal:', error);
             return { success: false, error: error.message };
         }
     }

@@ -67,6 +67,7 @@ A lightweight, mobile-first body composition tracking application built with van
 - **Export**: Download your data as a JSON file for backup (includes medication events when enabled)
 - **Import**: Restore data from a previously exported file
 - **Clear**: Remove all data (with confirmation prompt)
+- **Refresh Cache**: Use **Refresh Cached Files** to clear the PWA cache and reload the latest assets
 
 ## Technical Details
 
