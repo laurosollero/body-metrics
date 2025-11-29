@@ -11,6 +11,16 @@ class ChartManager {
         this.defaultOptions = this.getDefaultChartOptions();
     }
 
+    mapMetricKey(metricKey) {
+        const map = {
+            bodyFatPercent: 'bodyFat',
+            musclePercent: 'muscle',
+            waterPercent: 'water',
+            weight: 'weight'
+        };
+        return map[metricKey] || metricKey;
+    }
+
     getDefaultChartOptions() {
         return {
             responsive: true,
@@ -38,7 +48,20 @@ class ChartManager {
                     borderWidth: 1,
                     cornerRadius: 8,
                     displayColors: true,
-                    padding: 12
+                    padding: 12,
+                    callbacks: {
+                        title: (items) => {
+                            if (!items || !items.length) return '';
+                            const value = items[0].parsed?.x;
+                            return value ? Utils.formatDate(value, 'medium') : '';
+                        },
+                        label: (context) => {
+                            const label = context.dataset?.label || '';
+                            const value = context.parsed?.y;
+                            if (value === null || value === undefined) return label;
+                            return `${label}: ${Utils.formatNumber(value, 1)}`;
+                        }
+                    }
                 }
             },
             scales: {
@@ -532,6 +555,7 @@ class ChartManager {
     updateProgressSummary(period = 30) {
         try {
             const measurements = dataManager.getMeasurementsInPeriod(period);
+            const metricFlags = dataManager.settings?.features?.metrics || {};
             
             if (measurements.length < 2) {
                 // Not enough data for comparison
@@ -553,6 +577,18 @@ class ChartManager {
             ];
 
             metrics.forEach(metric => {
+                const enabled = metric.key === 'weight' ? true : !!metricFlags[this.mapMetricKey(metric.key)];
+                const cardElement = document.getElementById(metric.cardId);
+
+                if (cardElement) {
+                    cardElement.classList.toggle('hidden', !enabled);
+                }
+                if (!enabled) {
+                    const changeElement = document.getElementById(metric.elementId);
+                    if (changeElement) changeElement.innerHTML = '--';
+                    return;
+                }
+
                 const oldValue = oldestMeasurement[metric.key];
                 const newValue = newestMeasurement[metric.key];
                 
