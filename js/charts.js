@@ -43,11 +43,13 @@ class ChartManager {
             },
             scales: {
                 x: {
+                    type: 'linear',
                     grid: {
                         display: false
                     },
                     ticks: {
                         maxTicksLimit: 8,
+                        callback: (value) => Utils.formatDate(new Date(value), 'short'),
                         font: {
                             size: 11
                         }
@@ -326,15 +328,17 @@ class ChartManager {
             if (chartData.labels.length === 0) {
                 // Show no data message
                 this.charts.weight.data.labels = ['No data'];
-                this.charts.weight.data.datasets[0].data = [null];
+                this.charts.weight.data.datasets[0].data = [{
+                    x: Date.now(),
+                    y: null
+                }];
+                this.removeTrendLine(this.charts.weight);
             } else {
-                this.charts.weight.data.labels = chartData.labels;
-                this.charts.weight.data.datasets[0].data = chartData.data;
+                this.charts.weight.data.labels = [];
+                this.charts.weight.data.datasets[0].data = chartData.points;
                 
                 // Add trend line if we have enough data
-                if (chartData.data.length >= 3) {
-                    this.addTrendLine(this.charts.weight, chartData);
-                }
+                this.addTrendLine(this.charts.weight, chartData.points);
             }
             
             this.charts.weight.update('none');
@@ -382,23 +386,26 @@ class ChartManager {
 
             if (compositionSection) compositionSection.classList.remove('hidden');
 
-            const firstDatasetWithData = datasetConfigs.find(cfg => cfg.enabled && cfg.data.labels.length > 0);
-            let labels = firstDatasetWithData ? firstDatasetWithData.data.labels : [];
+            const firstDatasetWithData = datasetConfigs.find(cfg => cfg.enabled && cfg.data.points.length > 0);
+            const labels = firstDatasetWithData ? firstDatasetWithData.data.labels : [];
 
             if (labels.length === 0) {
                 // No entries for selected metrics
                 this.charts.composition.data.labels = ['No data'];
                 datasetConfigs.forEach(cfg => {
                     const dataset = this.charts.composition.data.datasets[cfg.index];
-                    dataset.data = [null];
+                    dataset.data = [{
+                        x: Date.now(),
+                        y: null
+                    }];
                     dataset.hidden = !cfg.enabled;
                 });
             } else {
-                this.charts.composition.data.labels = labels;
+                this.charts.composition.data.labels = [];
                 datasetConfigs.forEach(cfg => {
                     const dataset = this.charts.composition.data.datasets[cfg.index];
                     dataset.hidden = !cfg.enabled;
-                    dataset.data = cfg.enabled ? cfg.data.data : [];
+                    dataset.data = cfg.enabled ? cfg.data.points : [];
                 });
             }
 
@@ -409,15 +416,19 @@ class ChartManager {
     }
 
     // Add trend line to chart
-    addTrendLine(chart, chartData) {
-        if (chartData.data.length < 3) return;
+    addTrendLine(chart, points) {
+        if (!points || points.length < 3) {
+            this.removeTrendLine(chart);
+            return;
+        }
 
         try {
-            // Calculate linear regression
-            const regression = this.calculateLinearRegression(chartData.data);
-            const trendData = chartData.data.map((_, index) => 
-                regression.slope * index + regression.intercept
-            );
+            // Calculate linear regression using actual timestamps
+            const regression = this.calculateLinearRegression(points);
+            const trendData = points.map(point => ({
+                x: point.x,
+                y: regression.slope * (point.x - regression.x0) + regression.intercept
+            }));
 
             // Check if trend line dataset exists
             let trendDataset = chart.data.datasets.find(ds => ds.label === 'Trend');
@@ -445,21 +456,31 @@ class ChartManager {
         }
     }
 
+    removeTrendLine(chart) {
+        if (!chart || !chart.data || !chart.data.datasets) return;
+
+        const trendIndex = chart.data.datasets.findIndex(ds => ds.label === 'Trend');
+        if (trendIndex !== -1) {
+            chart.data.datasets.splice(trendIndex, 1);
+        }
+    }
+
     // Calculate linear regression for trend line
-    calculateLinearRegression(data) {
-        const n = data.length;
-        const x = data.map((_, i) => i);
-        const y = data;
+    calculateLinearRegression(points) {
+        const n = points.length;
+        const x0 = Math.min(...points.map(p => p.x));
+        const normalizedX = points.map(p => p.x - x0);
+        const y = points.map(p => p.y);
         
-        const sumX = x.reduce((a, b) => a + b, 0);
+        const sumX = normalizedX.reduce((a, b) => a + b, 0);
         const sumY = y.reduce((a, b) => a + b, 0);
-        const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-        const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
+        const sumXY = normalizedX.reduce((sum, xi, i) => sum + xi * y[i], 0);
+        const sumXX = normalizedX.reduce((sum, xi) => sum + xi * xi, 0);
         
         const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
         const intercept = (sumY - slope * sumX) / n;
         
-        return { slope, intercept };
+        return { slope, intercept, x0 };
     }
 
     // Update BMI chart with new data
@@ -470,8 +491,7 @@ class ChartManager {
             const measurements = dataManager.getMeasurementsInPeriod(period);
             
             // Calculate BMI for each measurement that has weight
-            const bmiData = [];
-            const labels = [];
+            const bmiPoints = [];
             
             measurements
                 .filter(m => m.weight && dataManager.profile && dataManager.profile.height)
@@ -479,23 +499,27 @@ class ChartManager {
                 .forEach(measurement => {
                     const bmi = Utils.calculateBMI(measurement.weight, dataManager.profile.height);
                     if (bmi) {
-                        bmiData.push(bmi);
-                        labels.push(Utils.formatDate(measurement.date, 'short'));
+                        bmiPoints.push({
+                            x: new Date(measurement.date).getTime(),
+                            y: bmi
+                        });
                     }
                 });
             
-            if (labels.length === 0) {
+            if (bmiPoints.length === 0) {
                 // Show no data message
                 this.charts.bmi.data.labels = ['No data'];
-                this.charts.bmi.data.datasets[0].data = [null];
+                this.charts.bmi.data.datasets[0].data = [{
+                    x: Date.now(),
+                    y: null
+                }];
+                this.removeTrendLine(this.charts.bmi);
             } else {
-                this.charts.bmi.data.labels = labels;
-                this.charts.bmi.data.datasets[0].data = bmiData;
+                this.charts.bmi.data.labels = [];
+                this.charts.bmi.data.datasets[0].data = bmiPoints;
                 
                 // Add trend line if we have enough data
-                if (bmiData.length >= 3) {
-                    this.addTrendLine(this.charts.bmi, { labels, data: bmiData });
-                }
+                this.addTrendLine(this.charts.bmi, bmiPoints);
             }
             
             this.charts.bmi.update('none');

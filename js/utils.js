@@ -449,20 +449,27 @@ class Utils {
     // Chart data helpers
     static prepareChartData(measurements, metric, period = 30) {
         if (!measurements || measurements.length === 0) {
-            return { labels: [], data: [] };
+            return { labels: [], data: [], points: [] };
         }
         
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - period);
         
         const filtered = measurements
-            .filter(m => new Date(m.date) >= cutoffDate && m[metric] !== null)
+            .filter(m => {
+                const date = new Date(m.date);
+                return date >= cutoffDate && m[metric] !== null && m[metric] !== undefined;
+            })
             .sort((a, b) => new Date(a.date) - new Date(b.date));
         
         const labels = filtered.map(m => this.formatDate(m.date, 'short'));
         const data = filtered.map(m => m[metric]);
+        const points = filtered.map(m => ({
+            x: new Date(m.date).getTime(),
+            y: m[metric]
+        }));
         
-        return { labels, data };
+        return { labels, data, points };
     }
 
     // Progress calculation helpers

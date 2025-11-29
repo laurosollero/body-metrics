@@ -497,6 +497,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background-color: var(--surface-color);
+  color: var(--text-color);
   font-size: var(--font-size-sm);
 }
 

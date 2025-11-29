@@ -1109,6 +1109,7 @@ class BodyMetricsApp {
     updateCharts() {
         if (this.currentView === 'charts') {
             const period = document.getElementById('chartPeriod')?.value || 30;
+            this.updateMetricVisibilityUI();
             chartManager.updateAllCharts(parseInt(period));
         }
     }
